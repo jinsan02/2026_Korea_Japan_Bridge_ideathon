@@ -1,0 +1,14 @@
+# Normalise line endings in the repository.
+#
+# Without this, editing on Windows produced files with mixed CRLF and LF
+# terminators, which made whole-file diffs out of one-line changes and broke
+# multi-line text matching in tooling.
+* text=auto eol=lf
+
+# Binary assets must never be converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

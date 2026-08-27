@@ -13,6 +13,11 @@
  * they want is "bigger". So the size button steps up one notch per press and
  * wraps back to the smallest at the end, and the language button shows the
  * language it will switch TO.
+ *
+ * Pressing language re-reads the document too, not just the interface.
+ * Translating the chrome alone left the document's own words behind and
+ * produced sentences like "この 書類は 가스요금 납부용지の ようです", which
+ * reads as a bug rather than as two languages.
  */
 import { LANGUAGE_NAMES, UI_LANGUAGES } from '@/lib/i18n';
 import { TEXT_SCALES, useSession } from '@/lib/session/SessionProvider';
@@ -31,7 +36,8 @@ const SAMPLE_SIZE: Record<TextScale, string> = {
 const LANGUAGE_GLYPH: Record<string, string> = { ko: '한', ja: '日' };
 
 export function ViewControls({ showLanguage = true }: { showLanguage?: boolean }) {
-  const { t, textScale, setTextScale, language, setLanguage, logEvent } = useSession();
+  const { t, textScale, setTextScale, language, switchLanguage, translating, logEvent } =
+    useSession();
 
   const index = Math.max(0, SCALES.indexOf(textScale));
   const next = SCALES[(index + 1) % SCALES.length]!;
@@ -81,12 +87,14 @@ export function ViewControls({ showLanguage = true }: { showLanguage?: boolean }
             type="button"
             className="view-controls__btn view-controls__btn--lang"
             aria-label={`${t.common.switchLanguage}: ${LANGUAGE_NAMES[other]}`}
+            aria-busy={translating}
+            disabled={translating}
             onClick={() => {
-              setLanguage(other);
+              switchLanguage(other);
               logEvent('language_changed', { screen: 'chrome' });
             }}
           >
-            <span aria-hidden="true">🌐</span>
+            <span aria-hidden="true">{translating ? '⏳' : '🌐'}</span>
             <span aria-hidden="true">{LANGUAGE_GLYPH[other] ?? LANGUAGE_NAMES[other]}</span>
           </button>
         </span>

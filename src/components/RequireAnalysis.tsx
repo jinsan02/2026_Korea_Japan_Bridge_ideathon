@@ -6,11 +6,10 @@
  * A refreshed tab or a deep link lands here instead of on a screen full of
  * blanks, and offers the one useful action: start over.
  *
- * It also owns the language mismatch. The toggle in the header changes the
- * interface immediately, but an analysis is written in one language at the
- * time it is produced - so rather than machine-translating a result on the
- * client, the screen says which language it was read in and offers to read it
- * again. Re-reading is honest about cost: it is a second analysis.
+ * It also owns the language mismatch. The header toggle re-reads the document
+ * automatically, so this notice only appears when that failed - a dropped
+ * request, or a live provider that errored - and offers the manual retry
+ * rather than leaving a half-translated screen with no way forward.
  */
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -28,7 +27,7 @@ export function RequireAnalysis({
   children: (analysis: DocumentAnalysis) => ReactNode;
 }) {
   const router = useRouter();
-  const { t, analysis, language } = useSession();
+  const { t, analysis, language, translating } = useSession();
 
   if (!analysis) {
     return (
@@ -50,7 +49,8 @@ export function RequireAnalysis({
 
   // 'unknown' means the document's language could not be determined, which is
   // not a mismatch with the reader's choice.
-  const mismatched = analysis.language !== 'unknown' && analysis.language !== language;
+  const mismatched =
+    !translating && analysis.language !== 'unknown' && analysis.language !== language;
 
   return (
     <>
