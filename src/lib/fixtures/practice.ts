@@ -544,9 +544,250 @@ const welfarePractice: PracticeScenario = {
 };
 
 // ---------------------------------------------------------------------------
+// D. 일본 수도요금 납부용지 (가스요금 유형의 연습본)
+// ---------------------------------------------------------------------------
+
+const waterPracticePage: SyntheticDocumentPage = {
+  width: PAGE_WIDTH,
+  height: PAGE_HEIGHT,
+  rules: [140, 300, 640],
+  shapes: [
+    { id: 'sh-amount-box', kind: 'outline', x: 60, y: 330, width: 680, height: 130 },
+    { id: 'sh-barcode', kind: 'barcode', x: 130, y: 900, width: 540, height: 70 },
+  ],
+  blocks: [
+    { id: 'org', text: '○○市 水道局', x: 60, y: 66, width: 460, height: 44, style: 'org' },
+    {
+      id: 'slip-kind',
+      text: '払込取扱票（コンビニ・アプリ用）',
+      x: 60,
+      y: 112,
+      width: 460,
+      height: 28,
+      style: 'fine',
+    },
+    {
+      id: 'title',
+      text: '水道料金 払込票',
+      x: 60,
+      y: 172,
+      width: 680,
+      height: 50,
+      style: 'title',
+    },
+    {
+      id: 'addressee',
+      text: '●●● 様',
+      x: 60,
+      y: 230,
+      width: 680,
+      height: 34,
+      style: 'subtitle',
+    },
+    {
+      id: 'amount-label',
+      text: 'ご請求金額',
+      x: 80,
+      y: 348,
+      width: 300,
+      height: 34,
+      style: 'fieldLabel',
+    },
+    {
+      id: 'amount-value',
+      text: '6,930円',
+      x: 80,
+      y: 384,
+      width: 340,
+      height: 60,
+      style: 'fieldValueStrong',
+    },
+    {
+      id: 'deadline-value',
+      text: 'お支払期限 2026年7月15日',
+      x: 420,
+      y: 390,
+      width: 310,
+      height: 44,
+      style: 'fieldValueStrong',
+    },
+    ...fieldRow({ idPrefix: 'customer', label: 'お客さま番号', value: '●●●', y: 480 }),
+    ...fieldRow({ idPrefix: 'period', label: 'ご使用期間', value: '5月分〜6月分', y: 536 }),
+    {
+      id: 'howto-label',
+      text: 'お支払い方法',
+      x: 60,
+      y: 668,
+      width: 680,
+      height: 32,
+      style: 'sectionLabel',
+    },
+    {
+      id: 'howto-store',
+      text: 'コンビニ・金融機関の窓口で お支払いいただけます。',
+      x: 60,
+      y: 704,
+      width: 680,
+      height: 38,
+      style: 'body',
+    },
+    {
+      id: 'howto-app',
+      text: 'スマホ決済アプリの バーコード読み取りにも 対応しています。',
+      x: 60,
+      y: 746,
+      width: 680,
+      height: 38,
+      style: 'body',
+    },
+    {
+      id: 'late-body',
+      text: '期限を過ぎますと 延滞利息が かかります。',
+      x: 60,
+      y: 796,
+      width: 680,
+      height: 38,
+      style: 'body',
+    },
+    {
+      id: 'late-body-2',
+      text: '金額は お客さまセンターへ ご確認ください。',
+      x: 60,
+      y: 834,
+      width: 680,
+      height: 34,
+      style: 'body',
+    },
+    {
+      id: 'contact-phone',
+      text: 'お客さまセンター ●●●',
+      x: 60,
+      y: 884,
+      width: 460,
+      height: 38,
+      style: 'body',
+    },
+    {
+      id: 'synthetic-note',
+      text: '연습용 합성문서입니다. 개인정보는 ●●●로 가렸습니다.',
+      x: 60,
+      y: 1000,
+      width: 680,
+      height: 32,
+      style: 'fine',
+    },
+  ],
+};
+
+const waterPractice: PracticeScenario = {
+  id: 'practice-jp-water',
+  documentType: 'utility_bill',
+  country: 'JP',
+  language: 'ko',
+  title: '수도요금 용지로 연습하기',
+  topic: '공공요금 용지에서 금액, 기한, 낼 수 있는 방법',
+  pageId: 'practice-jp-water',
+  questions: [
+    {
+      id: 'q-one-route',
+      prompt: '편의점에서 냈는데, 집에 와서 앱으로 바코드를 또 찍으면 어떻게 되나요?',
+      kind: 'actions',
+      options: [
+        {
+          text: '두 번 내게 됩니다. 한 곳만 골라야 합니다',
+          correct: true,
+          feedback: '맞습니다. 용지에는 낼 수 있는 곳이 여러 개 적혀 있지만 하나만 씁니다.',
+        },
+        {
+          text: '두 번째는 자동으로 취소됩니다',
+          correct: false,
+          feedback: '그런 안내는 용지에 없습니다. 실제로 두 번 빠져나갈 수 있습니다.',
+        },
+        {
+          text: '더 빨리 처리됩니다',
+          correct: false,
+          feedback: '빨라지지 않습니다. 같은 요금을 두 번 내는 것입니다.',
+        },
+      ],
+      hints: {
+        location: '용지 아래쪽 "お支払い方法" 부분을 보세요.',
+        keyword: '편의점과 앱이 각각 따로 적혀 있는 것을 확인하세요.',
+        answer:
+          '"コンビニ・金融機関の窓口"와 "スマホ決済アプリ"는 각각 다른 방법입니다. 둘 다 하면 두 번 냅니다.',
+        highlightBlockId: 'howto-store',
+      },
+      explanation:
+        '낼 수 있는 곳이 여러 개 적혀 있는 것은 고르라는 뜻이지, 다 하라는 뜻이 아닙니다.',
+    },
+    {
+      id: 'q-deadline',
+      prompt: '언제까지 내야 하나요?',
+      kind: 'important_date',
+      options: [
+        {
+          text: '2026년 7월 15일',
+          correct: true,
+          feedback: '맞습니다. "お支払期限" 줄에 적혀 있습니다.',
+        },
+        {
+          text: '2026년 4월 30일',
+          correct: false,
+          feedback: '그 날짜는 이 용지에 없습니다. 금액 오른쪽을 다시 보세요.',
+        },
+        {
+          text: '용지에 적혀 있지 않습니다',
+          correct: false,
+          feedback: '금액 바로 오른쪽에 적혀 있습니다. 다시 찾아보세요.',
+        },
+      ],
+      hints: {
+        location: '금액 바로 오른쪽을 보세요.',
+        keyword: '"お支払期限"이라고 적힌 줄을 찾아보세요.',
+        answer: '"お支払期限 2026年7月15日"이라고 적혀 있습니다. 支払는 낸다, 期限은 기한이라는 뜻입니다.',
+        highlightBlockId: 'deadline-value',
+      },
+      explanation:
+        '금액과 기한은 거의 항상 나란히 있습니다. 하나를 찾으면 다른 하나는 바로 옆입니다.',
+    },
+    {
+      id: 'q-payment',
+      prompt: '집 밖에 나가기 어렵습니다. 이 용지로 낼 수 있는 방법은 무엇인가요?',
+      kind: 'actions',
+      options: [
+        {
+          text: '휴대폰 결제앱으로 용지의 바코드를 찍는다',
+          correct: true,
+          feedback: '맞습니다. 용지에 바코드 읽기가 된다고 적혀 있습니다.',
+        },
+        {
+          text: '용지에 적힌 고객번호를 문자로 보낸다',
+          correct: false,
+          feedback: '고객번호를 문자로 보내는 방법은 용지에 없습니다. 개인정보를 문자로 보내지 마세요.',
+        },
+        {
+          text: '기한이 지날 때까지 기다렸다가 한 번에 낸다',
+          correct: false,
+          feedback: '기한이 지나면 연체이자가 붙는다고 적혀 있습니다.',
+        },
+      ],
+      hints: {
+        location: '용지 아래쪽 "お支払い方法" 부분을 보세요.',
+        keyword: '"アプリ"나 "バーコード"라는 글자를 찾아보세요.',
+        answer:
+          '"スマートフォン決済アプリのバーコード読み取りにも対応しています"라고 적혀 있습니다. 앱으로 바코드를 찍으면 나가지 않아도 됩니다.',
+        highlightBlockId: 'howto-app',
+      },
+      explanation:
+        '용지에 적힌 방법 중 하나만 고르면 됩니다. 적혀 있지 않은 방법은 쓰지 마세요.',
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 
 export const PRACTICE_SCENARIOS: readonly PracticeScenario[] = [
   taxPractice,
+  waterPractice,
   healthPractice,
   welfarePractice,
 ];
@@ -554,6 +795,7 @@ export const PRACTICE_SCENARIOS: readonly PracticeScenario[] = [
 /** Pages are looked up by id so a scenario carries no circular import. */
 export const PRACTICE_PAGES: Record<string, SyntheticDocumentPage> = {
   'practice-kr-tax-auto': taxPracticePage,
+  'practice-jp-water': waterPracticePage,
   'practice-jp-health': healthPracticePage,
   'practice-kr-welfare': welfarePracticePage,
 };

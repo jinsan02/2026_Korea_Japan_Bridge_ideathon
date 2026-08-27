@@ -67,9 +67,19 @@ describe('fixture provider', () => {
     const health = getFixture('jp-health-checkup')!;
     expect(fixtureAnalysis(health, 'ja').language).toBe('ja');
 
+    // Both demo documents carry both languages, because the toggle is on the
+    // demo path and must never land on an empty screen.
     const tax = getFixture('kr-local-tax')!;
-    // No Japanese variant authored: fall back rather than show a blank screen.
-    expect(fixtureAnalysis(tax, 'ja').language).toBe('ko');
+    expect(fixtureAnalysis(tax, 'ja').language).toBe('ja');
+    expect(fixtureAnalysis(tax, 'ko').language).toBe('ko');
+
+    const gas = getFixture('jp-gas-bill')!;
+    expect(fixtureAnalysis(gas, 'ja').language).toBe('ja');
+    expect(fixtureAnalysis(gas, 'ko').language).toBe('ko');
+
+    // A hidden fixture with no Japanese variant falls back rather than blanking.
+    const welfare = getFixture('kr-welfare')!;
+    expect(fixtureAnalysis(welfare, 'ja').language).toBe('ko');
   });
 });
 

@@ -9,7 +9,11 @@
  *
  * A field the document did not contain is rendered as "문서에 적혀 있지
  * 않습니다" - never filled in from elsewhere. Action cards carry their own
- * evidence, requiredItems, method and doNotDo.
+ * evidence, requiredItems and method.
+ *
+ * "낼 수 있는 방법" is the one list a reader acts on directly, so it is built
+ * from two halves that are kept apart: which rails appear comes from the
+ * document, and the explanation of each rail is our own fixed copy.
  */
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -22,11 +26,30 @@ import {
   UncertaintyList,
   WarningList,
 } from '@/components/WarningList';
-import { primaryAmount, primaryDate } from '@/lib/analysis/schema';
+import {
+  type PaymentMethodId,
+  primaryAmount,
+  primaryDate,
+} from '@/lib/analysis/schema';
 import { buildUtterance } from '@/lib/speech';
 import { deadlineStatus } from '@/lib/util/date';
 import { buildDeadlineIcs } from '@/lib/util/ics';
 import { useSession } from '@/lib/session/SessionProvider';
+
+/** Paired with the method name in text - never the only way to tell them apart. */
+const PAYMENT_ICON: Record<PaymentMethodId, string> = {
+  bank_counter: '🏦',
+  post_office: '📮',
+  convenience_store: '🏪',
+  atm: '🏧',
+  internet_banking: '💻',
+  ars: '☎️',
+  credit_card: '💳',
+  online_portal: '🌐',
+  barcode_app: '📱',
+  account_transfer: '🔄',
+  help_desk: '🧑‍💼',
+};
 
 function Missing({ note, help }: { note: string; help: string }) {
   return (
@@ -245,22 +268,6 @@ export default function ResultScreen() {
                               </>
                             ) : null}
 
-                            {action.doNotDo.length > 0 ? (
-                              <div className="notice notice--critical">
-                                <span className="notice__icon" aria-hidden="true">
-                                  🚫
-                                </span>
-                                <span>
-                                  <strong>{t.result.doNotDo}</strong>
-                                  <ul>
-                                    {action.doNotDo.map((item) => (
-                                      <li key={item}>{item}</li>
-                                    ))}
-                                  </ul>
-                                </span>
-                              </div>
-                            ) : null}
-
                             {conditionDefinition.features.evidenceLens &&
                             action.evidenceIds.length > 0 ? (
                               <Link
@@ -282,11 +289,55 @@ export default function ResultScreen() {
                 </section>
               ) : null}
 
-              {/* 5. cautions */}
+              {/* 5. how it can be paid - document-stated rails only */}
+              {analysis.amounts.length > 0 ? (
+                <section className="stack stack--tight">
+                  <h2 className="section-heading">{t.payment.title}</h2>
+                  <p className="text-small">{t.payment.subtitle}</p>
+                  {analysis.paymentOptions.length === 0 ? (
+                    <Missing note={t.payment.none} help={t.payment.noneHelp} />
+                  ) : (
+                    <ul className="payment-list">
+                      {analysis.paymentOptions.map((option) => (
+                        <li key={option.id} className="payment-row">
+                          <span className="payment-row__icon" aria-hidden="true">
+                            {PAYMENT_ICON[option.method]}
+                          </span>
+                          <span className="payment-row__body">
+                            <strong>{t.payment.methods[option.method]}</strong>
+                            <span className="text-small">
+                              {t.payment.help[option.method]}
+                            </span>
+                            <span className="text-small payment-row__quote">
+                              {t.payment.documentSays}: 「{option.label}」
+                              {option.note ? ` · ${option.note}` : ''}
+                            </span>
+                            {conditionDefinition.features.evidenceLens &&
+                            option.evidenceIds.length > 0 ? (
+                              <Link
+                                className="link-quiet"
+                                href={`/evidence?ids=${option.evidenceIds.join(',')}`}
+                                onClick={() =>
+                                  logEvent('evidence_opened', { screen: 'result' })
+                                }
+                              >
+                                <span aria-hidden="true">🔍 </span>
+                                {t.result.seeEvidence}
+                              </Link>
+                            ) : null}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              ) : null}
+
+              {/* 6. cautions */}
               <WarningList warnings={analysis.warnings} />
               <UncertaintyList items={analysis.uncertainty} />
 
-              {/* 6-8. contact, evidence, review */}
+              {/* 7-9. contact, evidence, review */}
               <div className="stack stack--tight">
                 {conditionDefinition.features.officialContact ? (
                   <Link className="btn btn--secondary" href="/contact">

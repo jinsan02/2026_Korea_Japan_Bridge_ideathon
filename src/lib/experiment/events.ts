@@ -58,6 +58,10 @@ export const EVENT_TYPES = [
   'practice_completed',
   'assistance_level_changed',
 
+  // reading controls - which accessibility affordances actually get used
+  'text_scale_changed',
+  'language_changed',
+
   // experiment extras
   'survey_submitted',
   'task_completed',

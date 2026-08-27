@@ -3,12 +3,14 @@
 /**
  * Document type confirmation.
  *
- * The AI's classification is a proposal, not a verdict. Nothing downstream
- * happens until the user says 네, and correcting it is a first-class option -
- * which is also the misclassification-recovery measure in the study.
+ * The screen states what it found and then offers three things it can do
+ * about it. It used to ask 맞나요? and wait for 네 / 아니요, which asked the
+ * reader to audit a classification - the one judgement they came here because
+ * they could not make - and gave them nothing to do next.
  *
- * "잘 모르겠어요" is offered as its own answer. Forcing a yes/no on someone who
- * genuinely does not know is how wrong data gets confirmed.
+ * Correcting the type is still reachable, as a quiet link. Choosing it flags
+ * the analysis for re-verification, because the fields below were extracted
+ * under the assumption the user just rejected.
  */
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,6 +20,8 @@ import { RequireAnalysis } from '@/components/RequireAnalysis';
 import { ConfidenceNote } from '@/components/WarningList';
 import { SpeakButton } from '@/components/SpeakButton';
 import { DOCUMENT_TYPE_IDS, type DocumentTypeId } from '@/lib/analysis/schema';
+import { buildEntryChoices } from '@/lib/learning/entry-choices';
+import { getFixture } from '@/lib/fixtures/documents';
 import { buildUtterance } from '@/lib/speech';
 import { useSession } from '@/lib/session/SessionProvider';
 
@@ -31,12 +35,12 @@ export default function ConfirmScreen() {
   const goNext = () =>
     router.push(conditionDefinition.features.guidedSolving ? '/solve' : '/result');
 
-  const confirm = () => {
+  const choose = (href: string) => {
     logEvent('document_type_confirmed', {
       screen: 'confirm',
       documentType: analysis?.documentType,
     });
-    goNext();
+    router.push(href);
   };
 
   const correctTo = (documentType: DocumentTypeId) => {
@@ -62,37 +66,11 @@ export default function ConfirmScreen() {
       {(analysis) => {
         const question = t.confirm.question(analysis.documentTypeLabel);
         const from = analysis.issuer ? t.confirm.from(analysis.issuer) : null;
+        const surface = (meta?.fixtureId && getFixture(meta.fixtureId)?.surface) || 'paper';
+        const choices = buildEntryChoices(analysis, surface, t);
 
         return (
-          <AppShell
-            screen="confirm"
-            backHref="/capture"
-            step={{ current: 4, total: 4 }}
-            footer={
-              choosing ? undefined : (
-                <>
-                  <button type="button" className="btn btn--primary" onClick={confirm}>
-                    <span aria-hidden="true">✓</span>
-                    {t.confirm.yes}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary"
-                    onClick={() => setChoosing(true)}
-                  >
-                    {t.confirm.no}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--quiet"
-                    onClick={() => setChoosing(true)}
-                  >
-                    {t.confirm.unsure}
-                  </button>
-                </>
-              )
-            }
-          >
+          <AppShell screen="confirm" backHref="/capture" step={{ current: 4, total: 4 }}>
             {choosing ? (
               <div className="stack stack--loose">
                 <div className="stack stack--tight">
@@ -124,10 +102,33 @@ export default function ConfirmScreen() {
                 <div className="stack stack--tight">
                   <h1 className="screen-title">{question}</h1>
                   {from ? <p className="screen-subtitle">{from}</p> : null}
-                  <p className="section-heading">{t.confirm.ask}</p>
                 </div>
 
                 <ConfidenceNote confidence={analysis.confidence} />
+
+                <div className="stack stack--tight">
+                  <h2 className="section-heading">{t.confirm.ask}</h2>
+                  <p className="text-small">{t.confirm.askHelp}</p>
+                </div>
+
+                <div className="stack">
+                  {choices.map((choice, index) => (
+                    <button
+                      key={choice.id}
+                      type="button"
+                      className={`action-card${index === 0 ? ' home-primary-card' : ''}`}
+                      onClick={() => choose(choice.href)}
+                    >
+                      <span className="row">
+                        <span className="action-card__index" aria-hidden="true">
+                          {choice.icon}
+                        </span>
+                        <span className="action-card__label">{choice.title}</span>
+                      </span>
+                      <span className="action-card__description">{choice.body}</span>
+                    </button>
+                  ))}
+                </div>
 
                 {conditionDefinition.features.speech ? (
                   <SpeakButton
@@ -135,6 +136,14 @@ export default function ConfirmScreen() {
                     text={buildUtterance([question, from, t.confirm.ask])}
                   />
                 ) : null}
+
+                <button
+                  type="button"
+                  className="btn btn--quiet"
+                  onClick={() => setChoosing(true)}
+                >
+                  {t.confirm.wrongType}
+                </button>
               </div>
             )}
           </AppShell>

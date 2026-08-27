@@ -42,7 +42,29 @@ const STYLE_ATTRS: Record<
   fieldValueStrong: { size: 28, weight: 700, fill: '#1b2027' },
   body: { size: 21, weight: 400, fill: '#1b2027' },
   fine: { size: 17, weight: 400, fill: '#6b7785' },
+  amountHuge: { size: 58, weight: 700, fill: '#1b2027' },
+  onFill: { size: 24, weight: 700, fill: '#ffffff' },
 };
+
+/**
+ * Deterministic bar widths for a fake barcode.
+ *
+ * A barcode on a payment slip is the thing the whole Japanese scenario turns
+ * on, so it has to look like one - but it must not encode anything, hence a
+ * fixed pseudo-random pattern rather than a real symbology.
+ */
+function barcodeBars(width: number): { x: number; w: number }[] {
+  const bars: { x: number; w: number }[] = [];
+  let x = 0;
+  let seed = 7;
+  while (x < width - 4) {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    const w = 2 + (seed % 3) * 2;
+    bars.push({ x, w });
+    x += w + 2 + ((seed >> 8) % 3);
+  }
+  return bars;
+}
 
 export function DocumentPageView({
   page,
@@ -60,7 +82,13 @@ export function DocumentPageView({
       >
         {/* Paper. Fixed light colours: this is a picture of a piece of paper,
             so it stays paper-coloured in dark mode rather than inverting. */}
-        <rect x="0" y="0" width={page.width} height={page.height} fill="#ffffff" />
+        <rect
+          x="0"
+          y="0"
+          width={page.width}
+          height={page.height}
+          fill={page.background ?? '#ffffff'}
+        />
         <rect
           x="0"
           y="0"
@@ -70,6 +98,49 @@ export function DocumentPageView({
           stroke="#d5dbe1"
           strokeWidth="2"
         />
+
+        {(page.shapes ?? []).map((shape) => {
+          if (shape.kind === 'barcode') {
+            return (
+              <g key={shape.id}>
+                <rect
+                  x={shape.x}
+                  y={shape.y}
+                  width={shape.width}
+                  height={shape.height}
+                  fill="#ffffff"
+                />
+                {barcodeBars(shape.width).map((bar, index) => (
+                  <rect
+                    key={`${shape.id}-${index}`}
+                    x={shape.x + bar.x}
+                    y={shape.y}
+                    width={bar.w}
+                    height={shape.height}
+                    fill="#1b2027"
+                  />
+                ))}
+              </g>
+            );
+          }
+          const fill =
+            shape.kind === 'outline'
+              ? 'none'
+              : (shape.fill ?? (shape.kind === 'button' ? '#10508c' : '#eef2f6'));
+          return (
+            <rect
+              key={shape.id}
+              x={shape.x}
+              y={shape.y}
+              width={shape.width}
+              height={shape.height}
+              rx={shape.kind === 'button' ? 12 : 6}
+              fill={fill}
+              stroke={shape.kind === 'outline' ? '#8c98a4' : 'none'}
+              strokeWidth={shape.kind === 'outline' ? 2 : 0}
+            />
+          );
+        })}
 
         {page.rules.map((y) => (
           <line

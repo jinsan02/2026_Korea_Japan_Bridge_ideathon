@@ -6,6 +6,16 @@
  * Back and close sit in the same place on every screen - one of the explicit
  * accessibility requirements - and going back is counted here rather than in
  * each screen, so the experiment metric cannot be forgotten.
+ *
+ * The header is two rows, and the split is by kind. The first row is where you
+ * are and how to leave it: back, the step count, the logo. The second is how
+ * you would like to read, set smaller and quieter beneath it.
+ *
+ * They were one row and it read as nonsense - "글자 크기 / 언어 / 뒤로 /
+ * 4단계 중 1단계" is four unrelated things in a sentence. Reading preferences
+ * still must not be buried in a settings page a struggling reader cannot
+ * navigate to, so they stay on every screen; they just stop competing with
+ * navigation for the top line.
  */
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -13,6 +23,7 @@ import type { ReactNode } from 'react';
 
 import { useSession } from '@/lib/session/SessionProvider';
 import { ModeBadges } from './ModeBadges';
+import { ViewControls } from './ViewControls';
 
 interface AppShellProps {
   children: ReactNode;
@@ -25,6 +36,11 @@ interface AppShellProps {
   /** Show the demo/live/synthetic badges. */
   showBadges?: boolean;
   step?: { current: number; total: number };
+  /**
+   * Hide the language toggle where switching mid-task would strand the user -
+   * a half-finished practice run has no other-language version to move to.
+   */
+  showLanguageToggle?: boolean;
 }
 
 export function AppShell({
@@ -34,6 +50,7 @@ export function AppShell({
   footer,
   showBadges = true,
   step,
+  showLanguageToggle = true,
 }: AppShellProps) {
   const router = useRouter();
   const { t, countBack, logEvent } = useSession();
@@ -51,35 +68,41 @@ export function AppShell({
   return (
     <div className="app-shell">
       <header className="app-header">
-        {backHref ? (
-          <button
-            type="button"
-            className="btn btn--quiet btn--icon"
-            onClick={handleBack}
-          >
-            <span aria-hidden="true">←</span>
-            {t.common.back}
-          </button>
-        ) : (
-          <div className="app-logo" aria-label={t.appName}>
-            <Image
-              className="app-logo__mark"
-              src="/brand/ai-door-mark.png"
-              alt=""
-              width={240}
-              height={165}
-              priority
-            />
-            <span className="app-logo__copy">
-              <span className="app-logo__name">AI DOOR</span>
-              <span className="app-logo__tagline">AI Support</span>
+        <div className="app-header__nav">
+          {backHref ? (
+            <button
+              type="button"
+              className="btn btn--quiet btn--icon"
+              onClick={handleBack}
+            >
+              <span aria-hidden="true">←</span>
+              {t.common.back}
+            </button>
+          ) : (
+            <div className="app-logo" aria-label={t.appName}>
+              <Image
+                className="app-logo__mark"
+                src="/brand/ai-door-mark.png"
+                alt=""
+                width={240}
+                height={165}
+                priority
+              />
+              <span className="app-logo__copy">
+                <span className="app-logo__name">AI DOOR</span>
+                <span className="app-logo__tagline">AI Support</span>
+              </span>
+            </div>
+          )}
+          <span className="app-header__spacer" />
+          {step ? (
+            <span className="app-header__step">
+              {t.common.step(step.current, step.total)}
             </span>
-          </div>
-        )}
-        <span className="app-header__spacer" />
-        {step ? (
-          <span className="text-small">{t.common.step(step.current, step.total)}</span>
-        ) : null}
+          ) : null}
+        </div>
+
+        <ViewControls showLanguage={showLanguageToggle} />
       </header>
 
       <main className="app-main">

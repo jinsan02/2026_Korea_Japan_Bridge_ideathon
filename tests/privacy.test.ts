@@ -3,6 +3,8 @@
  * log will accept, and what the review masking removes.
  */
 import { describe, expect, it } from 'vitest';
+import { euro } from '@/lib/i18n/particle';
+import { ko } from '@/lib/i18n/ko';
 
 import {
   EventBatchSchema,
@@ -124,7 +126,9 @@ describe('demo documents', () => {
   it('are labelled as synthetic on the page itself', () => {
     for (const fixture of DOCUMENT_FIXTURES) {
       const text = fixture.page.blocks.map((block) => block.text).join(' ');
-      expect(text).toMatch(/합성문서|合成文書/);
+      // 合成画面 covers the app screenshot: it is a screen, not a document,
+      // but it must still say on its face that it is not real.
+      expect(text).toMatch(/합성문서|合成文書|合成画面/);
     }
   });
 
@@ -133,5 +137,37 @@ describe('demo documents', () => {
       const analysis = fixture.analysisByLanguage.ko ?? fixture.analysisByLanguage.ja;
       expect(analysis?.issuer ?? '').toMatch(/○○|△△/);
     }
+  });
+});
+
+describe('korean particles', () => {
+  it('picks 로 / 으로 from the last syllable', () => {
+    // The label comes from the model, so the sentence cannot hardcode either.
+    expect(euro('지방세 납세고지서')).toBe('지방세 납세고지서로');
+    expect(euro('복지 신청 안내문')).toBe('복지 신청 안내문으로');
+    // ㄹ takes the bare form, like a vowel ending.
+    expect(euro('이메일')).toBe('이메일로');
+    // A non-Hangul ending falls back rather than guessing.
+    expect(euro('PDF')).toBe('PDF로');
+  });
+
+  it('every document fixture label reads correctly in the confirm sentence', () => {
+    for (const fixture of DOCUMENT_FIXTURES) {
+      for (const analysis of Object.values(fixture.analysisByLanguage)) {
+        if (!analysis || analysis.language !== 'ko') continue;
+        const sentence = ko.confirm.question(analysis.documentTypeLabel);
+        expect(sentence).not.toMatch(/[가-힣]서으로|[가-힣]로로/);
+      }
+    }
+  });
+});
+
+describe('korean particles with qualifiers', () => {
+  it('agrees with the word, not a trailing bracket', () => {
+    // Fixture labels carry a country qualifier; the particle must agree with
+    // the word in front of it, not with the bracket.
+    expect(euro('가스요금 납부용지 (일본)')).toBe('가스요금 납부용지 (일본)로');
+    expect(euro('결제앱 화면 (일본)')).toBe('결제앱 화면 (일본)으로');
+    expect(euro('복지 안내문 (한국)')).toBe('복지 안내문 (한국)으로');
   });
 });

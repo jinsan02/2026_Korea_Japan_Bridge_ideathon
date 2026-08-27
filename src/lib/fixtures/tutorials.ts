@@ -8,6 +8,12 @@
  * Nothing here contains personal data or any value from a user's own document.
  * Korean and Japanese label differences are carried in `keyTerms`, because the
  * same task uses different words on each side of the strait.
+ *
+ * A step earns its place by being something the reader could get wrong. "Find
+ * the amount" is not a step - a person who has paid bills for forty years can
+ * find the amount. "Count how many dates this notice has" is a step, because
+ * a notice with two deadlines and two different totals is where people
+ * actually go wrong.
  */
 import type { DocumentTypeId } from '@/lib/analysis/schema';
 import type { DocumentTutorial } from '@/lib/learning/types';
@@ -23,43 +29,45 @@ const taxTutorial: DocumentTutorial = {
     {
       order: 1,
       title: '어떤 세금인지 확인하기',
-      instruction: '문서 위쪽의 제목과 "세목" 칸을 보세요.',
-      reason: '재산세인지 자동차세인지에 따라 문의할 부서가 다릅니다.',
+      instruction: '"세목" 칸을 보세요.',
+      reason: '재산세인지 자동차세인지에 따라 물어볼 부서가 다릅니다.',
       exampleLabel: '세목',
     },
     {
       order: 2,
-      title: '누가 내는 세금인지 확인하기',
-      instruction: '"과세 대상"이나 받는 사람 이름을 보세요.',
-      reason: '내 앞으로 온 것이 맞는지 먼저 확인해야 합니다.',
+      title: '내 앞으로 온 것이 맞는지 보기',
+      instruction: '"과세 대상" 칸이 내 집, 내 차가 맞는지 보세요.',
+      reason: '주소가 비슷해 남의 고지서가 오는 일이 있습니다.',
       exampleLabel: '과세 대상',
     },
     {
       order: 3,
-      title: '납부 금액 확인하기',
-      instruction: '"납부 세액" 칸의 숫자를 보세요.',
-      reason: '금액이 예상과 다르면 납부하기 전에 물어봐야 합니다.',
-      exampleLabel: '납부 세액',
+      title: '날짜가 몇 개인지 세어 보기',
+      instruction: '"납기 내"와 "납기 후" 두 줄을 찾으세요.',
+      reason:
+        '고지서 한 장에 날짜가 두 개입니다. 이걸 하나로 보면 금액을 잘못 냅니다.',
+      exampleLabel: '납기 내 / 납기 후',
     },
     {
       order: 4,
-      title: '납부기한 확인하기',
-      instruction: '"납부 기한" 칸의 날짜를 보고 달력에 적어 두세요.',
-      reason: '기한이 지나면 가산금이 붙습니다. 가장 중요한 날짜입니다.',
-      exampleLabel: '납부 기한',
+      title: '내가 낼 날짜 쪽 금액 보기',
+      instruction: '오늘 낸다면 "납기 내" 줄의 금액입니다.',
+      reason: '두 금액이 다릅니다. 늦게 내면 아래쪽 금액이 됩니다.',
+      exampleLabel: '납기 내 세액',
     },
     {
       order: 5,
-      title: '납부 방법 확인하기',
-      instruction: '"납부 방법" 안내와 전자납부번호를 확인하세요.',
-      reason: '공식 경로로 납부해야 안전합니다.',
+      title: '전자납부번호와 계좌번호 구분하기',
+      instruction: '"전자납부번호"는 이 고지서 한 장에만 쓰는 번호입니다.',
+      reason:
+        '계좌번호가 아닙니다. 누가 이 번호로 송금하라고 하면 그건 사기입니다.',
       exampleLabel: '전자납부번호',
     },
     {
       order: 6,
-      title: '궁금하면 공식 문의처로 확인하기',
-      instruction: '문서 아래쪽의 담당 부서 전화번호로 물어보세요.',
-      reason: '문자로 온 번호가 아니라 고지서에 적힌 번호가 안전합니다.',
+      title: '이상하면 내기 전에 물어보기',
+      instruction: '고지서에 인쇄된 담당 부서 번호로 전화하세요.',
+      reason: '한 번 내면 되돌리기 어렵습니다. 문자로 온 번호는 쓰지 마세요.',
       exampleLabel: '문의처',
     },
   ],
@@ -279,8 +287,110 @@ const welfareTutorial: DocumentTutorial = {
   practiceScenarioIds: ['practice-kr-welfare'],
 };
 
+const utilityTutorial: DocumentTutorial = {
+  documentType: 'utility_bill',
+  country: 'JP',
+  language: 'ko',
+  title: '공공요금 납부용지를 받았을 때 확인하는 순서',
+  purpose:
+    '가스·수도 요금 용지는 얼마를 언제까지, 어디서 낼 수 있는지 알려주는 종이입니다. 낼 곳이 여러 군데라서 어렵게 느껴질 뿐입니다.',
+  checkOrder: [
+    {
+      order: 1,
+      title: '어느 회사에서 온 것인지 보기',
+      instruction: '용지 맨 위의 회사 이름을 보세요.',
+      reason: '가스와 수도는 회사가 다릅니다. 물어볼 곳도 다릅니다.',
+      exampleLabel: '○○ガス / ○○水道局',
+    },
+    {
+      order: 2,
+      title: '늦으면 어떻게 되는지 읽어 두기',
+      instruction: '"延滞" 또는 "延滞利息"이라고 적힌 줄을 찾으세요.',
+      reason:
+        '늦으면 돈이 더 붙지만 얼마인지는 대개 적혀 있지 않습니다. 그럴 땐 전화로 묻습니다.',
+      exampleLabel: '延滞利息',
+    },
+    {
+      order: 3,
+      title: '낼 수 있는 방법이 몇 가지인지 세기',
+      instruction: '"お支払い方法" 아래 줄들을 세어 보세요.',
+      reason:
+        '여러 가지가 적혀 있어도 하나만 하면 됩니다. 두 군데서 내면 두 번 나갑니다.',
+      exampleLabel: 'お支払い方法',
+    },
+    {
+      order: 4,
+      title: '바코드가 있는지 보기',
+      instruction: '용지 아래쪽에 줄무늬가 있는지 확인하세요.',
+      reason: '바코드가 있으면 계산대나 휴대폰 앱이 읽습니다. 숫자를 칠 필요가 없습니다.',
+      exampleLabel: 'バーコード',
+    },
+    {
+      order: 5,
+      title: '앱으로 낼 때는 앱 안의 돈을 먼저 보기',
+      instruction: '앱 화면의 "残高"를 보세요.',
+      reason:
+        '앱의 돈은 통장 돈이 아니라 미리 넣어 둔 돈입니다. 모자라면 결제가 안 됩니다.',
+      exampleLabel: 'ご利用可能残高',
+    },
+    {
+      order: 6,
+      title: '「지금 내기」와 「예약」 구분하기',
+      instruction: '"今すぐ支払う"와 "支払い予約"은 다른 버튼입니다.',
+      reason:
+        '예약은 아직 낸 것이 아닙니다. 그리고 한 번 내면 앱에서 취소할 수 없습니다.',
+      exampleLabel: '今すぐ支払う / 支払い予約',
+    },
+  ],
+  keyTerms: [
+    {
+      term: '납부용지',
+      easyExplanation: '요금을 내라고 보내는 종이입니다. 이 종이 자체를 내면 됩니다.',
+      translatedTerm: '払込票',
+    },
+    {
+      term: '청구금액',
+      easyExplanation: '이번에 내야 하는 돈입니다.',
+      translatedTerm: 'ご請求金額',
+    },
+    {
+      term: '납부기한',
+      easyExplanation: '이 날짜까지 내야 한다는 뜻입니다.',
+      translatedTerm: 'お支払期限',
+    },
+    {
+      term: '연체료',
+      easyExplanation: '늦게 내면 더 붙는 돈입니다.',
+      translatedTerm: '延滞利息',
+    },
+    {
+      term: '자동이체',
+      easyExplanation: '한 번 신청해 두면 다음부터 통장에서 저절로 빠져나갑니다.',
+      translatedTerm: '口座振替',
+    },
+    {
+      term: '결제 예약',
+      easyExplanation: '앱에서 낼 날짜를 미리 정해 두는 것입니다. 아직 낸 것은 아닙니다.',
+      translatedTerm: '支払い予約',
+    },
+  ],
+  commonWarnings: [
+    '앱에서 "지금 결제"를 누르면 대부분 취소할 수 없습니다. 금액을 먼저 보세요.',
+    '"결제 예약"은 아직 낸 것이 아닙니다. 그날 잔액이 있어야 합니다.',
+    '문자로 온 링크가 아니라 용지의 바코드나 공식 앱을 쓰세요.',
+    '한 용지를 편의점에서도 내고 앱에서도 내면 두 번 낼 수 있습니다. 한 곳만 쓰세요.',
+  ],
+  officialVerificationGuide: [
+    '용지에 적힌 고객센터 번호를 확인합니다.',
+    '전화해서 "용지를 받았는데 금액을 확인하고 싶다"고 말하면 됩니다.',
+    '앱 화면이 이해되지 않으면 결제를 누르지 말고 먼저 물어봅니다.',
+  ],
+  practiceScenarioIds: ['practice-jp-water'],
+};
+
 export const DOCUMENT_TUTORIALS: readonly DocumentTutorial[] = [
   taxTutorial,
+  utilityTutorial,
   healthTutorial,
   welfareTutorial,
 ];

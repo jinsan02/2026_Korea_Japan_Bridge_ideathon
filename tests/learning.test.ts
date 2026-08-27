@@ -79,8 +79,20 @@ describe('practice scenarios', () => {
 
     expect(fixtureText).toContain('86,400원');
     expect(practiceText).not.toContain('86,400원');
-    expect(fixtureText).toContain('2026년 9월 30일');
-    expect(practiceText).not.toContain('2026년 9월 30일');
+    expect(fixtureText).toContain('2026.09.30');
+    expect(practiceText).not.toContain('2026.09.30');
+  });
+
+  it('the Japanese practice slip differs from the gas slip it reviews', () => {
+    const gas = DOCUMENT_FIXTURES.find((f) => f.id === 'jp-gas-bill')!;
+    const water = PRACTICE_SCENARIOS.find((s) => s.documentType === 'utility_bill')!;
+    const gasText = gas.page.blocks.map((b) => b.text).join(' ');
+    const waterText = PRACTICE_PAGES[water.pageId].blocks.map((b) => b.text).join(' ');
+
+    expect(gasText).toContain('8,181円');
+    expect(waterText).not.toContain('8,181円');
+    expect(gasText).toContain('2026年4月30日');
+    expect(waterText).not.toContain('2026年4月30日');
   });
 
   it('practice documents carry no un-masked personal-data placeholder', () => {
@@ -238,5 +250,73 @@ describe('learning metrics', () => {
     expect(NEXT_LEVEL.hinted).toBe('solo');
     expect(NEXT_LEVEL.solo).toBe('final_check');
     expect(NEXT_LEVEL.final_check).toBe('final_check');
+  });
+});
+
+describe('synthetic page layout', () => {
+  /**
+   * SVG <text> does not wrap, so a line that is too long runs off the paper
+   * and is simply lost - and it is lost silently, because the block's declared
+   * width still says it fits. This estimates the rendered width instead:
+   * full-width for CJK and Hangul, roughly 0.6em for Latin and digits.
+   */
+  const SIZE: Record<string, number> = {
+    org: 30,
+    title: 36,
+    subtitle: 20,
+    sectionLabel: 22,
+    fieldLabel: 22,
+    fieldValue: 24,
+    fieldValueStrong: 28,
+    body: 21,
+    fine: 17,
+    amountHuge: 58,
+    onFill: 24,
+  };
+
+  const estimateWidth = (text: string, fontSize: number): number => {
+    let ems = 0;
+    for (const char of text) {
+      const code = char.codePointAt(0)!;
+      const wide =
+        (code >= 0x1100 && code <= 0x11ff) ||
+        (code >= 0x3000 && code <= 0x30ff) ||
+        (code >= 0x4e00 && code <= 0x9fff) ||
+        (code >= 0xac00 && code <= 0xd7a3) ||
+        (code >= 0xff00 && code <= 0xff60);
+      ems += wide ? 1 : char === ' ' ? 0.3 : 0.6;
+    }
+    return ems * fontSize;
+  };
+
+  const pages = [
+    ...DOCUMENT_FIXTURES.map((f) => [f.id, f.page] as const),
+    ...Object.entries(PRACTICE_PAGES),
+  ];
+
+  it('no line runs off the right edge of its page', () => {
+    for (const [id, page] of pages) {
+      for (const block of page.blocks) {
+        const width = estimateWidth(block.text, SIZE[block.style] ?? 21);
+        expect(
+          { page: id, block: block.id, right: Math.round(block.x + width) },
+          `${id}/${block.id} overflows`,
+        ).toEqual({
+          page: id,
+          block: block.id,
+          right: Math.min(Math.round(block.x + width), page.width),
+        });
+      }
+    }
+  });
+
+  it('no line runs off the bottom of its page', () => {
+    for (const [id, page] of pages) {
+      for (const block of page.blocks) {
+        expect(block.y + block.height, `${id}/${block.id} below the page`).toBeLessThanOrEqual(
+          page.height,
+        );
+      }
+    }
   });
 });

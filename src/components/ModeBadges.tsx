@@ -1,59 +1,36 @@
 'use client';
 
 /**
- * Honesty banner.
+ * Degradation notice.
  *
- * Demo mode is announced with a badge AND a sentence, never hidden, never
- * dressed up as live analysis. When a live provider failed and we degraded to
- * fixtures, the reason is stated too - "AI 서버에 연결하지 못해 데모 모드로
- * 보여드립니다" is a better thing to say on stage than a silent fake.
+ * This used to be a permanent three-chip banner - 데모 모드 / 예시 문서 /
+ * 합성문서 - on top of every screen. It has been cut back to the one case that
+ * is actually news: a live provider failed and the app quietly served a
+ * prepared result instead. Announcing that on stage is better than a silent
+ * fake; announcing "this is a demo" on a screen the presenter just introduced
+ * as a demo is noise that pushes the content down.
+ *
+ * Choosing the example documents deliberately is therefore silent. What keeps
+ * that honest is the documents themselves: every synthetic page carries a
+ * printed "합성문서입니다 / 合成文書です" line, and a test fails if one does
+ * not. The disclosure lives on the artefact, where it cannot be styled away.
  */
 import { useSession } from '@/lib/session/SessionProvider';
 
 export function ModeBadges() {
   const { t, meta } = useSession();
-  if (!meta) return null;
-
-  const isDemo = meta.provider === 'fixture';
+  if (!meta?.fellBack) return null;
 
   return (
-    <div className="stack stack--tight">
-      <div className="badge-row">
-        <span className={`badge ${isDemo ? 'badge--demo' : 'badge--live'}`}>
-          <span aria-hidden="true">{isDemo ? '🧪' : '🤖'}</span>
-          {isDemo ? t.badge.demoMode : t.badge.liveMode}
-        </span>
-        <span className="badge badge--synthetic">
-          <span aria-hidden="true">
-            {meta.provider === 'ollama' ? '💻' : meta.provider === 'openai' ? '☁️' : '📄'}
-          </span>
-          {t.badge.provider[meta.provider]}
-          {meta.model ? ` · ${meta.model}` : ''}
-        </span>
-        {meta.synthetic ? (
-          <span className="badge badge--synthetic">
-            <span aria-hidden="true">📄</span>
-            {t.badge.synthetic}
-          </span>
-        ) : null}
-      </div>
-
-      {meta.fellBack ? (
-        <p className="notice notice--caution" role="status">
-          <span className="notice__icon" aria-hidden="true">
-            ⚠️
-          </span>
-          <span>
-            <strong>{t.badge.fellBack}</strong>
-            <br />
-            {t.badge.reason[meta.fallbackReason ?? 'unknown']}
-          </span>
-        </p>
-      ) : (
-        <p className="text-small">
-          {isDemo ? t.badge.demoModeHelp : t.badge.liveModeHelp}
-        </p>
-      )}
-    </div>
+    <p className="notice notice--caution" role="status">
+      <span className="notice__icon" aria-hidden="true">
+        ⚠️
+      </span>
+      <span>
+        <strong>{t.badge.fellBack}</strong>
+        <br />
+        {t.badge.reason[meta.fallbackReason ?? 'unknown']}
+      </span>
+    </p>
   );
 }

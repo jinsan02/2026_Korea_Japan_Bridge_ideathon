@@ -2,7 +2,7 @@
  * Event store.
  *
  * NDJSON appended to a gitignored directory, plus an in-memory mirror so the
- * /lab download works even when the filesystem is read-only (some serverless
+ * /admin download works even when the filesystem is read-only (some serverless
  * hosts). Good enough for a pilot with a few dozen participants; a real study
  * would point this at a database.
  */
@@ -51,7 +51,7 @@ export async function appendEvents(events: StoredEvent[]): Promise<void> {
     );
   } catch {
     // A read-only filesystem must not break the demo. The in-memory mirror
-    // still backs the /lab export for the current process.
+    // still backs the /admin export for the current process.
   }
 }
 

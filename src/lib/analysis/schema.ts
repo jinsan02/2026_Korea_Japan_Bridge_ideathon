@@ -12,7 +12,7 @@
  */
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '2.0' as const;
+export const SCHEMA_VERSION = '3.0' as const;
 
 export const LanguageSchema = z.enum(['ko', 'ja', 'unknown']);
 export type Language = z.infer<typeof LanguageSchema>;
@@ -55,11 +55,11 @@ export type Region = z.infer<typeof RegionSchema>;
 export const EvidenceItemSchema = z.object({
   id: z.string().min(1).max(40),
   /** Verbatim source text. Never paraphrased. */
-  originalText: z.string().min(1).max(400),
+  originalText: z.string().min(1).max(200),
   /** Present when the document language differs from the UI language. */
-  translatedText: z.string().max(400).optional(),
+  translatedText: z.string().max(200).optional(),
   /** Why this line matters, in plain words. */
-  explanation: z.string().min(1).max(300),
+  explanation: z.string().min(1).max(120),
   page: z.number().int().positive().optional(),
   region: RegionSchema.optional(),
 });
@@ -105,14 +105,17 @@ export type AmountItem = z.infer<typeof AmountItemSchema>;
 export const ActionCardSchema = z.object({
   id: z.string().min(1).max(40),
   title: z.string().min(1).max(60),
-  description: z.string().min(1).max(240),
+  description: z.string().min(1).max(100),
   /** ISO date the action must happen by, when the document says so. */
   deadline: z.string().nullable(),
-  requiredItems: z.array(z.string().min(1).max(80)).max(6),
-  /** How to do it - official routes only. */
-  method: z.array(z.string().min(1).max(160)).max(5),
-  /** Explicit "do not do this" list. Phishing and automation traps live here. */
-  doNotDo: z.array(z.string().min(1).max(160)).max(5),
+  requiredItems: z.array(z.string().min(1).max(40)).max(3),
+  /**
+   * How to do it - official routes only, three short steps at most. A card
+   * that runs past a phone screen stops being a door and becomes a wall.
+   * "Do not do this" used to live here too; it now goes to `warnings`, so a
+   * prohibition never competes with the action for the reader's attention.
+   */
+  method: z.array(z.string().min(1).max(70)).max(3),
   evidenceIds: z.array(z.string().max(40)).max(6),
   confidence: z.number().min(0).max(1),
 });
@@ -124,7 +127,7 @@ export const MAX_ACTION_CARDS = 3;
 export const WarningItemSchema = z.object({
   id: z.string().min(1).max(40),
   severity: z.enum(['info', 'caution', 'critical']),
-  message: z.string().min(1).max(300),
+  message: z.string().min(1).max(160),
   evidenceIds: z.array(z.string().max(40)).max(5).default([]),
 });
 export type WarningItem = z.infer<typeof WarningItemSchema>;
@@ -146,6 +149,45 @@ export const ContactItemSchema = z.object({
 });
 export type ContactItem = z.infer<typeof ContactItemSchema>;
 
+/**
+ * How a bill may be paid.
+ *
+ * A closed vocabulary rather than free text, because "낼 수 있는 방법" is the
+ * one list a reader will act on directly and an invented route is the same
+ * kind of hazard as an invented phone number. The Korean local-tax form and
+ * the Japanese payment slip turn out to describe nearly the same rails, which
+ * is what makes the two demos comparable at all.
+ */
+export const PAYMENT_METHOD_IDS = [
+  'bank_counter',
+  'post_office',
+  'convenience_store',
+  'atm',
+  'internet_banking',
+  'ars',
+  'credit_card',
+  'online_portal',
+  'barcode_app',
+  'account_transfer',
+  'help_desk',
+] as const;
+
+export const PaymentMethodSchema = z.enum(PAYMENT_METHOD_IDS);
+export type PaymentMethodId = z.infer<typeof PaymentMethodSchema>;
+
+export const PaymentOptionSchema = z.object({
+  id: z.string().min(1).max(40),
+  method: PaymentMethodSchema,
+  /** The document's own wording, e.g. "전국 은행", "コンビニ払い". */
+  label: z.string().min(1).max(60),
+  /** One extra fact the document states - hours, a site name, a limit. */
+  note: z.string().max(80).nullable(),
+  evidenceIds: z.array(z.string().max(40)).max(4),
+  confidence: z.number().min(0).max(1),
+});
+export type PaymentOption = z.infer<typeof PaymentOptionSchema>;
+
+
 export const DocumentAnalysisSchema = z.object({
   language: LanguageSchema,
   country: CountrySchema,
@@ -154,16 +196,21 @@ export const DocumentAnalysisSchema = z.object({
   documentTypeLabel: z.string().min(1).max(80),
   issuer: z.string().max(120).nullable(),
   title: z.string().min(1).max(120),
-  /** One sentence. The first thing shown on the result screen. */
-  summary: z.string().min(1).max(300),
-  importantDates: z.array(ImportantDateSchema).max(8),
-  amounts: z.array(AmountItemSchema).max(8),
+  /**
+   * One sentence, and short enough to be one. The 300-character cap this
+   * replaced let a model write three while the prompt asked for one.
+   */
+  summary: z.string().min(1).max(120),
+  importantDates: z.array(ImportantDateSchema).max(4),
+  amounts: z.array(AmountItemSchema).max(4),
   recipientActions: z.array(ActionCardSchema).max(MAX_ACTION_CARDS),
-  warnings: z.array(WarningItemSchema).max(10),
+  /** How the reader is allowed to pay. Closed vocabulary, evidence-bound. */
+  paymentOptions: z.array(PaymentOptionSchema).max(6).default([]),
+  warnings: z.array(WarningItemSchema).max(4),
   officialContacts: z.array(ContactItemSchema).max(5),
-  evidence: z.array(EvidenceItemSchema).max(24),
+  evidence: z.array(EvidenceItemSchema).max(10),
   /** Plain-language list of what could not be confirmed. */
-  uncertainty: z.array(z.string().min(1).max(200)).max(8),
+  uncertainty: z.array(z.string().min(1).max(80)).max(3),
   confidence: z.number().min(0).max(1),
   requiresHumanVerification: z.boolean(),
 });
@@ -175,9 +222,9 @@ export type DocumentAnalysis = z.infer<typeof DocumentAnalysisSchema>;
  * harden.ts can only escalate, never relax.
  */
 export const ModelAnalysisSchema = DocumentAnalysisSchema.extend({
-  warnings: z.array(WarningItemSchema).max(10).default([]),
+  warnings: z.array(WarningItemSchema).max(4).default([]),
   requiresHumanVerification: z.boolean().default(false),
-  uncertainty: z.array(z.string().min(1).max(200)).max(8).default([]),
+  uncertainty: z.array(z.string().min(1).max(80)).max(3).default([]),
 });
 export type ModelAnalysis = z.infer<typeof ModelAnalysisSchema>;
 

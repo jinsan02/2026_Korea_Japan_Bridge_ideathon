@@ -19,7 +19,11 @@ export type BlockStyle =
   | 'fieldValue'
   | 'fieldValueStrong'
   | 'body'
-  | 'fine';
+  | 'fine'
+  /** The one number the reader is looking for, set large. */
+  | 'amountHuge'
+  /** Light text drawn on top of a filled shape. */
+  | 'onFill';
 
 export interface DocumentBlock {
   id: string;
@@ -32,25 +36,52 @@ export interface DocumentBlock {
   style: BlockStyle;
 }
 
+/**
+ * Non-text furniture: the boxes, buttons and barcodes that make a payment slip
+ * look like a payment slip and an app screen look like an app screen. Drawn
+ * behind the text, and never a source of evidence on its own.
+ */
+export interface DocumentShape {
+  id: string;
+  kind: 'panel' | 'outline' | 'button' | 'barcode';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Overrides the default fill for 'panel' and 'button'. */
+  fill?: string;
+}
+
 export interface SyntheticDocumentPage {
   width: number;
   height: number;
   blocks: DocumentBlock[];
   /** Horizontal rules drawn at these y positions. */
   rules: number[];
+  shapes?: DocumentShape[];
+  /** Page background. Paper white unless a screenshot says otherwise. */
+  background?: string;
 }
 
-/** Standard page canvas for every fixture (roughly A4 proportions). */
+/** Standard paper canvas (roughly A4 proportions). */
 export const PAGE_WIDTH = 800;
 export const PAGE_HEIGHT = 1130;
 
-/** Converts a block's page-unit box into the normalised 0..1 rect the schema wants. */
-export function blockToBBox(block: DocumentBlock): Region {
+/** Phone screenshot canvas, for a document the user meets inside an app. */
+export const SCREEN_WIDTH = 640;
+export const SCREEN_HEIGHT = 1300;
+
+/**
+ * Converts a block's page-unit box into the normalised 0..1 rect the schema
+ * wants. Measured against the page's own canvas, not a global one, so a phone
+ * screenshot and an A4 notice can share the Evidence Lens.
+ */
+export function blockToBBox(page: SyntheticDocumentPage, block: DocumentBlock): Region {
   return {
-    x: block.x / PAGE_WIDTH,
-    y: block.y / PAGE_HEIGHT,
-    width: block.width / PAGE_WIDTH,
-    height: block.height / PAGE_HEIGHT,
+    x: block.x / page.width,
+    y: block.y / page.height,
+    width: block.width / page.width,
+    height: block.height / page.height,
   };
 }
 
@@ -67,7 +98,7 @@ export function findBlock(
 
 /** Bounding box for a block id, for use when building fixture evidence. */
 export function bboxOf(page: SyntheticDocumentPage, blockId: string): Region {
-  return blockToBBox(findBlock(page, blockId));
+  return blockToBBox(page, findBlock(page, blockId));
 }
 
 /** The verbatim text of a block, so fixture quotes cannot drift from the render. */

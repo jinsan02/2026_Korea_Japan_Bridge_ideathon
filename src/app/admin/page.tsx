@@ -3,21 +3,21 @@
 /**
  * Settings and models - the operator screen, not a user screen.
  *
- * Four modes are offered by name, exactly as the spec words them, with the
- * 8B quality mode carrying its warning inline rather than in a footnote: on an
- * 8GB card it can spill to system RAM, so it must never be picked casually
- * minutes before a live demo.
+ * Three modes are offered by name. The opt-in 8B local model was removed: it
+ * could not be the live-demo default on an 8GB card anyway, so its only real
+ * effect was to put a mode on this screen that must not be clicked before a
+ * demo.
  *
  * Also the export point for the de-identified event log and the model
- * comparison record.
+ * comparison record. Reaching this route at all requires the shared code -
+ * see middleware.ts.
  */
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
 import { CONDITION_IDS, CONDITIONS } from '@/lib/experiment/conditions';
 import { clearProgress } from '@/lib/learning/progress';
-import { TEXT_SCALES, useSession } from '@/lib/session/SessionProvider';
-import type { TextScale } from '@/lib/session/SessionProvider';
+import { useSession } from '@/lib/session/SessionProvider';
 
 interface StatusPayload {
   defaultProvider: string;
@@ -25,27 +25,16 @@ interface StatusPayload {
   ollama: {
     baseUrl: string;
     model: string;
-    qualityModel: string;
     numCtx: number;
     reachable: boolean;
     installedModels: string[];
   };
 }
 
-type ModeKey = 'openai' | 'ollamaFast' | 'ollamaQuality' | 'fixture';
+type ModeKey = 'openai' | 'ollamaFast' | 'fixture';
 
 export default function LabScreen() {
-  const {
-    t,
-    provider,
-    qualityMode,
-    setProvider,
-    condition,
-    setCondition,
-    textScale,
-    setTextScale,
-    meta,
-  } = useSession();
+  const { t, provider, setProvider, condition, setCondition, meta } = useSession();
   const [status, setStatus] = useState<StatusPayload | null>(null);
   const [eventCount, setEventCount] = useState<number | null>(null);
 
@@ -62,25 +51,18 @@ export default function LabScreen() {
   }, []);
 
   const activeMode: ModeKey =
-    provider === 'openai'
-      ? 'openai'
-      : provider === 'ollama'
-        ? qualityMode
-          ? 'ollamaQuality'
-          : 'ollamaFast'
-        : 'fixture';
+    provider === 'openai' ? 'openai' : provider === 'ollama' ? 'ollamaFast' : 'fixture';
 
   const chooseMode = (mode: ModeKey) => {
     if (mode === 'openai') setProvider('openai');
-    else if (mode === 'ollamaFast') setProvider('ollama', false);
-    else if (mode === 'ollamaQuality') setProvider('ollama', true);
+    else if (mode === 'ollamaFast') setProvider('ollama');
     else setProvider('fixture');
   };
 
-  const modes: ModeKey[] = ['openai', 'ollamaFast', 'ollamaQuality', 'fixture'];
+  const modes: ModeKey[] = ['openai', 'ollamaFast', 'fixture'];
 
   return (
-    <AppShell screen="lab" backHref="/" showBadges={false}>
+    <AppShell screen="admin" backHref="/" showBadges={false}>
       <div className="stack stack--loose">
         <div className="stack stack--tight">
           <h1 className="screen-title">{t.lab.title}</h1>
@@ -112,14 +94,6 @@ export default function LabScreen() {
             ))}
           </div>
 
-          {activeMode === 'ollamaQuality' ? (
-            <p className="notice notice--caution">
-              <span className="notice__icon" aria-hidden="true">
-                ⚠️
-              </span>
-              <span>{t.lab.qualityWarning}</span>
-            </p>
-          ) : null}
         </section>
 
         {/* --- environment readout ------------------------------------------ */}
@@ -252,30 +226,6 @@ export default function LabScreen() {
             </span>
             <span>{t.lab.privacyNote}</span>
           </p>
-        </section>
-
-        {/* --- accessibility ------------------------------------------------ */}
-        <section className="card">
-          <h2 className="section-heading">{t.common.textSize}</h2>
-          <div className="stack stack--tight">
-            {(Object.keys(TEXT_SCALES) as TextScale[]).map((scale) => (
-              <label key={scale} className="radio-row" data-selected={textScale === scale}>
-                <input
-                  type="radio"
-                  name="textScale"
-                  checked={textScale === scale}
-                  onChange={() => setTextScale(scale)}
-                />
-                <span>
-                  {scale === 'normal'
-                    ? t.common.textSizeNormal
-                    : scale === 'large'
-                      ? t.common.textSizeLarge
-                      : t.common.textSizeHuge}
-                </span>
-              </label>
-            ))}
-          </div>
         </section>
 
         <button

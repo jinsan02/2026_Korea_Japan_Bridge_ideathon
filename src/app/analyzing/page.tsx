@@ -28,9 +28,9 @@ export default function AnalyzingScreen() {
   const router = useRouter();
   const {
     t,
+    hydrated,
     language,
     provider,
-    qualityMode,
     fixtureId,
     image,
     setAnalysis,
@@ -55,8 +55,7 @@ export default function AnalyzingScreen() {
         body: JSON.stringify({
           language,
           provider,
-          qualityMode,
-          acceptFixtureFallback,
+                acceptFixtureFallback,
           fixtureId: image ? undefined : fixtureId,
           imageBase64: image?.base64,
           mimeType: image?.mimeType,
@@ -64,7 +63,7 @@ export default function AnalyzingScreen() {
       });
       return (await response.json()) as AnalysisOutcome;
     },
-    [language, provider, qualityMode, fixtureId, image],
+    [language, provider, fixtureId, image],
   );
 
   const run = useCallback(
@@ -132,10 +131,13 @@ export default function AnalyzingScreen() {
   );
 
   useEffect(() => {
-    if (started.current) return;
+    // Wait for sessionStorage: firing now would analyse the default document
+    // rather than the one the user picked, which on stage reads as the model
+    // getting it wrong.
+    if (!hydrated || started.current) return;
     started.current = true;
     void run();
-  }, [run]);
+  }, [hydrated, run]);
 
   const cancel = () => abortRef.current?.abort();
 

@@ -154,7 +154,7 @@ function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
     const blockId = question.hints.highlightBlockId;
     if (!blockId) return null;
     try {
-      return blockToBBox(findBlock(page, blockId));
+      return blockToBBox(page, findBlock(page, blockId));
     } catch {
       return null;
     }

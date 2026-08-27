@@ -10,6 +10,10 @@
  * The reminder is honest about what it is: a localStorage entry that surfaces a
  * card the next time this browser opens the app. There is no push notification
  * in this MVP and the screen says so. The 시연용 button is labelled as such.
+ *
+ * Some documents do not end on paper. A Japanese payment slip hands the reader
+ * to an app screen that nobody explained either, so when the solved fixture
+ * declares a continuation this screen offers it before the loop turns.
  */
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +22,7 @@ import { useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { RequireAnalysis } from '@/components/RequireAnalysis';
 import { practiceForDocumentType } from '@/lib/fixtures/practice';
+import { nextFixture } from '@/lib/fixtures/documents';
 import { fastForwardReminder, setReminder } from '@/lib/learning/progress';
 import { useSession } from '@/lib/session/SessionProvider';
 
@@ -39,13 +44,26 @@ function reminderTime(when: 'tonight' | 'tomorrow'): string {
 
 export default function SolveCompleteScreen() {
   const router = useRouter();
-  const { t, logEvent } = useSession();
+  const { t, meta, setFixtureId, setImage, logEvent } = useSession();
   const [scheduled, setScheduled] = useState<string | null>(null);
 
   return (
     <RequireAnalysis screen="solve_complete">
       {(analysis) => {
         const scenario = practiceForDocumentType(analysis.documentType);
+        const continuation = meta?.fixtureId ? nextFixture(meta.fixtureId) : undefined;
+
+        const openContinuation = () => {
+          if (!continuation) return;
+          // The next screen is a new document, so the photo of the old one goes.
+          setImage(null);
+          setFixtureId(continuation.id);
+          logEvent('document_selected', {
+            screen: 'solve_complete',
+            fixtureId: continuation.id,
+          });
+          router.push('/analyzing');
+        };
 
         const schedule = (when: 'tonight' | 'tomorrow') => {
           const label = when === 'tonight' ? t.complete.tonight : t.complete.tomorrow;
@@ -85,6 +103,21 @@ export default function SolveCompleteScreen() {
               </div>
 
               <p style={{ fontSize: 'var(--fs-heading)' }}>{t.complete.body}</p>
+
+              {continuation ? (
+                <section className="card" style={{ borderColor: 'var(--brand)' }}>
+                  <h2 className="section-heading">{t.complete.continueTitle}</h2>
+                  <p>{t.complete.continueBody}</p>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={openContinuation}
+                  >
+                    <span aria-hidden="true">📱</span>
+                    {t.complete.continueAction}
+                  </button>
+                </section>
+              ) : null}
 
               <div className="stack">
                 <button
@@ -152,7 +185,6 @@ export default function SolveCompleteScreen() {
                 ) : null}
               </section>
 
-              <p className="text-small">{t.goal.statement}</p>
             </div>
           </AppShell>
         );

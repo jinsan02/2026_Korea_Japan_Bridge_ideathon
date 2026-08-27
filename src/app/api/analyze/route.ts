@@ -18,6 +18,7 @@ import {
   analyzeWithFixture,
   resolveRequestedProvider,
 } from '@/lib/providers';
+import { checkRate, clientKey } from '@/lib/util/rate-limit';
 
 export const runtime = 'nodejs';
 /** Never cached: every request is a different document. */
@@ -31,8 +32,6 @@ const RequestSchema = z
     fixtureId: z.string().max(60).optional(),
     language: LanguageSchema.default('ko'),
     provider: z.enum(['openai', 'ollama', 'fixture']).optional(),
-    /** Opt-in Ollama 8B. */
-    qualityMode: z.boolean().optional(),
     /** Document type the user chose on the confirm screen. */
     userDeclaredType: DocumentTypeSchema.optional(),
     /**
@@ -62,6 +61,25 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return badRequest('unknown', 'Malformed request body.', 400);
+  }
+
+  // A public demo URL puts a paid key behind this route; a loose tab must not
+  // be able to spend it. Fixture requests cost nothing, so they are not capped.
+  if ((body as { imageBase64?: unknown } | null)?.imageBase64 !== undefined) {
+    const verdict = checkRate(clientKey(request), serverConfig.analyzeRateLimitPerMinute);
+    if (!verdict.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: 'provider_error',
+            detail: 'Too many analyses from this address. Wait a moment.',
+            retryable: true,
+          },
+        },
+        { status: 429, headers: { 'Retry-After': String(verdict.retryAfter) } },
+      );
+    }
   }
 
   const parsed = RequestSchema.safeParse(body);
@@ -111,7 +129,6 @@ export async function POST(request: Request) {
   }
 
   const outcome = await analyzeDocument(requested, documentInput, {
-    qualityMode: input.qualityMode,
     // A missing key or an unusable provider still degrades silently to the
     // fixture - that is a configuration problem, not a failed analysis of the
     // user's document. A genuine provider failure comes back as ok:false so the

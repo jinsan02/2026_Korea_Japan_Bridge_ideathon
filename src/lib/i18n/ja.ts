@@ -26,6 +26,10 @@ export const ja: Dictionary = {
     ttsUnavailable: 'この 機械では 音声で 読めません。',
     step: (current: number, total: number) => `${total}つの うち ${current}つめ`,
     textSize: '文字の 大きさ',
+    textSizeGlyph: 'あ',
+    switchLanguage: '言語を 変える',
+    rereadInLanguage: 'この 言語で 読み直す',
+    rereadNotice: '今の 結果は ほかの 言語で 読んだ ものです。',
     textSizeNormal: 'ふつう',
     textSizeLarge: '大きい',
     textSizeHuge: 'とても 大きい',
@@ -87,7 +91,6 @@ export const ja: Dictionary = {
     tutorialBody: '書類の 種類ごとに 確認する 順番を もう一度 見ます。',
     historyTitle: 'これまでの 練習',
     historyBody: '自分で できた ものと ヒントを 使った ものを 見ます。',
-    settings: '設定と モデル',
     reviewDue: '練習の 時間に なりました',
     reviewDueBody: (topic: string) => `${topic}を 短く 練習しませんか?`,
     reviewStart: 'いま 練習する',
@@ -103,8 +106,8 @@ export const ja: Dictionary = {
     takePhoto: '書類を 撮る',
     chooseFile: '画像を えらぶ',
     tryExample: 'サンプル文書で ためす',
-    demoTitle: 'デモ用の 合成文書',
-    demoHelp: '個人情報の ない 書類です。発表の デモに 使って ください。',
+    demoTitle: '例で ためす',
+    demoHelp: '下の 書類から 一つ えらぶと すぐ はじまります。',
     selected: 'えらんだ 書類',
     analyze: 'この 書類で 確認する',
     preparing: '写真を 準備して います',
@@ -160,7 +163,9 @@ export const ja: Dictionary = {
   confirm: {
     question: (type: string) => `この 書類は ${type}の ようです。`,
     from: (issuer: string) => `${issuer}から 届きました。`,
-    ask: '合って いますか?',
+    ask: '何から お手伝いしましょうか。',
+    askHelp: '一つ えらぶと、そこから いっしょに 見ます。',
+    wrongType: '書類の 種類が ちがいます',
     yes: 'はい、合って います',
     no: 'ちがいます',
     unsure: 'わかりません',
@@ -176,6 +181,33 @@ export const ja: Dictionary = {
       court_notice: '裁判所・行政',
       other: 'そのほか',
       unknown: 'わかりません',
+    },
+  },
+
+  entry: {
+    payment: {
+      title: '支払いメニューを さがす',
+      body: (count: number) => `この 書類で 払える 方法 ${count}つを お見せします。`,
+    },
+    buttons: {
+      title: 'ボタンの 場所を 教わる',
+      body: 'どの ボタンを 押すのか 画面で 指さします。',
+    },
+    where: {
+      title: 'どこに 書いて あるか 見る',
+      body: '大事な ところが 書類の どこに あるか 指さします。',
+    },
+    facts: {
+      title: 'いくらを いつまでか 見る',
+      body: '金額と 期限だけ 先に 確認します。',
+    },
+    steps: {
+      title: '順番に いっしょに 確認する',
+      body: '最初から 最後まで 一つずつ いっしょに 見ます。',
+    },
+    stepsScreen: {
+      title: '支払いの 順番を 確認する',
+      body: 'この 画面で 何を 先に するか 一つずつ 見ます。',
     },
   },
 
@@ -236,6 +268,10 @@ export const ja: Dictionary = {
     body: 'つぎは 同じ 種類の 書類を 自分で 確認できるように、短く 練習しませんか?',
     practiceNow: 'いま 練習する',
     practiceLater: 'あとで 練習する',
+    continueTitle: 'バーコードを 読み取ると 次の 画面が 出ます',
+    continueBody:
+      'アプリで 用紙の バーコードを 読み取ると 画面が もう 一つ 出ます。その 画面も 一緒に 読みますか。',
+    continueAction: 'アプリの 画面を 見せる',
     tutorialOnly: '今日 学んだ 方法だけ 見る',
     scheduleTitle: 'いつ 練習しますか?',
     tonight: '今日の 夜',
@@ -266,11 +302,45 @@ export const ja: Dictionary = {
     seeEvidence: '根拠を 見る',
     requiredItems: '持ちもの',
     method: 'やり方',
-    doNotDo: 'これは しないで ください',
     solveTogether: 'AIと いっしょに 解決する',
     seeTutorial: '今日 学んだ 方法を 見る',
     practiceSimilar: 'にた 書類で 練習する',
     reviewLater: 'あとで 練習する',
+  },
+
+payment: {
+    title: '払える 方法',
+    subtitle: '書類に 書いて ある 方法だけを お見せします。',
+    none: 'この 書類には 払い方が 書いて ありません。',
+    noneHelp: '裏面を 見るか、窓口に お問い合わせください。',
+    documentSays: '書類には こう 書いて あります',
+    needs: '何が 必要ですか',
+    methods: {
+      bank_counter: '銀行の 窓口',
+      post_office: '郵便局の 窓口',
+      convenience_store: 'コンビニ',
+      atm: 'ATM',
+      internet_banking: 'インターネットバンキング',
+      ars: '電話の 自動音声 (ARS)',
+      credit_card: 'クレジットカード',
+      online_portal: '公式の 納付サイト',
+      barcode_app: 'スマホの バーコード アプリ',
+      account_transfer: '口座振替',
+      help_desk: '窓口に 行って 相談',
+    },
+    help: {
+      bank_counter: '用紙を そのまま 持って 行けば 係の 人が やって くれます。',
+      post_office: '用紙を そのまま 持って 行けば 係の 人が やって くれます。',
+      convenience_store: '用紙を そのまま レジに 出すだけです。',
+      atm: 'カードと 用紙の 納付番号が 必要です。',
+      internet_banking: '銀行の アプリか サイトに ログインします。',
+      ars: '電話を かけて 音声の 案内に 従います。',
+      credit_card: 'カード番号を 入れます。手数料が かかる ことが あります。',
+      online_portal: '公式の 納付サイトで 納付番号を 入れます。',
+      barcode_app: 'アプリを 開いて 用紙の バーコードを 読み取ります。',
+      account_transfer: '先に 申し込むと 次から 自動で 引き落とされます。',
+      help_desk: '窓口に 直接 行って 聞きながら 進めます。',
+    },
   },
 
   evidence: {
@@ -403,20 +473,15 @@ export const ja: Dictionary = {
     providerLabel: '分析モード',
     providers: {
       openai: 'オンライン基本モード — OpenAI API',
-      ollamaFast: '速い ローカルモード — Qwen3-VL 4B (おすすめ)',
-      ollamaQuality: '高品質 ローカルモード — Qwen3-VL 8B (おそい ことが あります)',
-      fixture: '安全な デモモード — Fixture Demo',
+      ollamaFast: 'ローカルモード — Qwen3-VL 4B',
+      fixture: '例の 書類モード — ネットなしで 動きます',
     },
     providerHelp: {
       openai: 'インターネットが 必要です。写真が 外の AIに 送られます。',
       ollamaFast: 'この コンピューターの 中で 処理します。8GB VRAMで 安定します。',
-      ollamaQuality:
-        '8GB VRAMでは おそく なる ことが あります。発表の 前に かならず ためして ください。',
       fixture: 'ネットワークが なくても ぜんぶの 流れを 見せられます。',
     },
-    qualityWarning:
-      '高品質 ローカルモードは 電源に つないで、ほかの GPUプログラムを 閉じた ときだけ 使って ください。ライブデモの 標準には しないで ください。',
-    ollamaStatus: 'ローカルサーバーの 状態',
+    ollamaStatus: 'Ollamaの 接続',
     ollamaReachable: 'つながって います',
     ollamaUnreachable: 'つながって いません。ollama serve が 動いて いるか 確認して ください。',
     installedModels: '入って いる モデル',
@@ -450,8 +515,4 @@ export const ja: Dictionary = {
     body: 'この 書類は AIが はっきり 読めませんでした。原文を もう一度 見るか 公式の ところに 聞いて ください。',
   },
 
-  goal: {
-    statement:
-      'AI Doorの 目標は 使う人が AIに ずっと たよる ことでは なく、同じ 種類の 書類を つぎは 自分で わかって 進められるように する ことです。',
-  },
 };

@@ -37,17 +37,12 @@ export { OpenAIProvider } from './openai';
 export type { DocumentAnalysisProvider, DocumentInput } from './types';
 
 /** Registry. Adding a vendor is one case here plus one file. */
-export function createProvider(
-  provider: ProviderId,
-  options: { qualityMode?: boolean } = {},
-): DocumentAnalysisProvider {
+export function createProvider(provider: ProviderId): DocumentAnalysisProvider {
   switch (provider) {
     case 'openai':
       return new OpenAIProvider(serverConfig.openai.model);
     case 'ollama':
-      return new OllamaProvider(
-        options.qualityMode ? serverConfig.ollama.qualityModel : serverConfig.ollama.model,
-      );
+      return new OllamaProvider(serverConfig.ollama.model);
     case 'fixture':
     default:
       return new FixtureProvider();
@@ -65,7 +60,6 @@ export function resolveRequestedProvider(clientValue: string | undefined): Provi
 
 interface RunOptions {
   /** Opt-in Ollama 8B. Never the default. */
-  qualityMode?: boolean;
   /**
    * When true, a live-provider failure degrades to the fixture analysis. When
    * false the failure is returned so the UI can ask the user first - the spec
@@ -188,7 +182,7 @@ export async function analyzeDocument(
   }
 
   // --- first attempt ------------------------------------------------------
-  const primary = createProvider(requested, options);
+  const primary = createProvider(requested);
   const first = await attempt(primary, input, 'primary', meta);
 
   if (first.ok) {

@@ -15,11 +15,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
-import { LANGUAGE_NAMES, UI_LANGUAGES } from '@/lib/i18n';
 import { practiceForDocumentType } from '@/lib/fixtures/practice';
 import {
   dueReminder,
-  readProgress,
+
   setReminder,
   type ReviewReminder,
 } from '@/lib/learning/progress';
@@ -27,17 +26,11 @@ import { useSession } from '@/lib/session/SessionProvider';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { t, language, setLanguage, logEvent, resetRun } = useSession();
+  const { t, logEvent, resetRun } = useSession();
   const [reminder, setPendingReminder] = useState<ReviewReminder | null>(null);
-  const [learnedCount, setLearnedCount] = useState(0);
-  const [practiceCount, setPracticeCount] = useState(0);
 
   useEffect(() => {
     logEvent('session_start', { screen: 'home' });
-    const progress = readProgress();
-    setLearnedCount(progress.learnedTypes.length);
-    setPracticeCount(progress.records.length);
-
     const due = dueReminder();
     if (due) {
       setPendingReminder(due);
@@ -139,19 +132,13 @@ export default function HomeScreen() {
                 </span>
                 <span className="action-card__label">{t.home.tutorialTitle}</span>
               </span>
-              <span className="action-card__description">
-                {t.home.tutorialBody}
-                {learnedCount > 0 ? ` (${learnedCount})` : ''}
-              </span>
+              <span className="action-card__description">{t.home.tutorialBody}</span>
             </Link>
           </div>
 
           <Link className="btn btn--quiet home-history-link" href="/history">
             <span aria-hidden="true">↺</span>
-            <span>
-              <strong>{t.home.historyTitle}</strong>
-              {practiceCount > 0 ? ` (${practiceCount})` : ''}
-            </span>
+            <strong>{t.home.historyTitle}</strong>
           </Link>
         </div>
 
@@ -166,29 +153,6 @@ export default function HomeScreen() {
           </span>
         </p>
 
-        <div className="card card--flat">
-          <label className="field__label" htmlFor="language-select">
-            {t.common.language}
-          </label>
-          <select
-            id="language-select"
-            className="field-select"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value as typeof language)}
-          >
-            {UI_LANGUAGES.map((code) => (
-              <option key={code} value={code}>
-                {LANGUAGE_NAMES[code]}
-              </option>
-            ))}
-          </select>
-          <Link className="btn btn--quiet" href="/lab">
-            <span aria-hidden="true">⚙️</span>
-            {t.home.settings}
-          </Link>
-        </div>
-
-        <p className="text-small">{t.goal.statement}</p>
       </div>
     </AppShell>
   );

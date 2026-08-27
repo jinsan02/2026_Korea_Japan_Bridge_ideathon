@@ -7,6 +7,8 @@
  * - never state a value the document did not contain
  * - never tell the user they are being assessed
  */
+import { euro } from './particle';
+
 export const ko = {
   appName: 'AI Door',
   tagline: '받은 문서를 이해하고, 다음에는 스스로',
@@ -26,10 +28,14 @@ export const ko = {
     ttsUnavailable: '이 기기에서는 음성 읽기를 사용할 수 없습니다.',
     step: (current: number, total: number) => `${total}단계 중 ${current}단계`,
     textSize: '글자 크기',
+    textSizeGlyph: '가',
     textSizeNormal: '보통',
     textSizeLarge: '크게',
     textSizeHuge: '아주 크게',
     language: '언어',
+    switchLanguage: '언어 바꾸기',
+    rereadInLanguage: '이 언어로 다시 읽기',
+    rereadNotice: '지금 결과는 다른 언어로 읽은 것입니다.',
     showOriginal: '원문 보기',
     showEasy: '쉬운 설명 보기',
   },
@@ -84,10 +90,9 @@ export const ko = {
     practiceTitle: '혼자 해보기',
     practiceBody: '전에 배운 문서와 비슷한 연습 문서를 직접 풀어봅니다.',
     tutorialTitle: '나의 문서 매뉴얼',
-    tutorialBody: '문서 종류별로 확인하는 순서를 다시 봅니다.',
+    tutorialBody: '내가 배운 확인 순서를 다시 봅니다.',
     historyTitle: '지난 연습 보기',
     historyBody: '혼자 맞힌 것과 힌트를 쓴 것을 확인합니다.',
-    settings: '설정과 모델',
     reviewDue: '복습할 시간이 되었습니다',
     reviewDueBody: (topic: string) => `${topic}을 짧게 연습해 볼까요?`,
     reviewStart: '지금 연습하기',
@@ -103,8 +108,8 @@ export const ko = {
     takePhoto: '문서 촬영',
     chooseFile: '이미지 업로드',
     tryExample: '예시 문서로 체험',
-    demoTitle: '시연용 합성문서',
-    demoHelp: '개인정보가 없는 문서입니다. 발표 시연에 사용하세요.',
+    demoTitle: '예시 상황으로 해보기',
+    demoHelp: '아래 문서 중 하나를 고르면 바로 시작합니다.',
     selected: '선택한 문서',
     analyze: '이 문서로 확인하기',
     preparing: '사진을 준비하고 있습니다',
@@ -157,9 +162,11 @@ export const ko = {
   },
 
   confirm: {
-    question: (type: string) => `이 문서는 ${type}으로 보입니다.`,
+    question: (type: string) => `이 문서는 ${euro(type)} 보입니다.`,
     from: (issuer: string) => `${issuer}에서 보냈습니다.`,
-    ask: '맞나요?',
+    ask: '무엇부터 도와드릴까요?',
+    askHelp: '하나를 고르시면 그것부터 같이 봅니다.',
+    wrongType: '문서 종류가 다릅니다',
     yes: '네, 맞아요',
     no: '아니에요',
     unsure: '잘 모르겠어요',
@@ -178,6 +185,35 @@ export const ko = {
     },
   },
 
+  /** The three doors on the confirm screen. */
+  entry: {
+    payment: {
+      title: '납부 메뉴 찾기',
+      body: (count: number) => `이 문서로 낼 수 있는 방법 ${count}가지를 보여드립니다.`,
+    },
+    buttons: {
+      title: '버튼 위치 안내받기',
+      body: '어느 버튼을 눌러야 하는지 화면에서 짚어 드립니다.',
+    },
+    where: {
+      title: '어디에 적혀 있는지 보기',
+      body: '중요한 내용이 문서 어디에 있는지 짚어 드립니다.',
+    },
+    facts: {
+      title: '얼마를 언제까지인지 보기',
+      body: '금액과 기한만 먼저 확인합니다.',
+    },
+    steps: {
+      title: '순서대로 같이 확인하기',
+      body: '처음부터 끝까지 한 단계씩 함께 봅니다.',
+    },
+    stepsScreen: {
+      title: '결제 순서 확인하기',
+      body: '이 화면에서 무엇을 먼저 하는지 한 단계씩 봅니다.',
+    },
+  },
+
+  /** The three doors on the confirm screen. */
   guided: {
     heading: '지금 같이 해결하기',
     intro: '한 번에 다 보여드리지 않습니다. 하나씩 같이 확인해요.',
@@ -236,6 +272,10 @@ export const ko = {
     practiceNow: '지금 연습하기',
     practiceLater: '나중에 연습하기',
     tutorialOnly: '오늘 배운 방법만 보기',
+    continueTitle: '바코드를 찍으면 다음 화면이 나옵니다',
+    continueBody:
+      '휴대폰 앱으로 용지의 바코드를 찍으면 화면이 하나 더 나옵니다. 그 화면도 같이 읽어 드릴까요?',
+    continueAction: '앱 화면 사진 보여주기',
     scheduleTitle: '언제 연습할까요?',
     tonight: '오늘 저녁',
     tomorrow: '내일',
@@ -265,11 +305,54 @@ export const ko = {
     seeEvidence: '근거 보기',
     requiredItems: '준비물',
     method: '하는 방법',
-    doNotDo: '이렇게 하지 마세요',
     solveTogether: 'AI와 함께 해결하기',
     seeTutorial: '오늘 배운 방법 보기',
     practiceSimilar: '비슷한 문서 연습하기',
     reviewLater: '나중에 복습하기',
+  },
+
+/**
+   * Payment rails.
+   *
+   * The names and the "what you need" lines are ours, not the model's: they
+   * are the same for every document, so they belong in the dictionary where
+   * they can be checked, rather than in output that has to be re-verified on
+   * every run. Only which rails appear, and the label beside each, come from
+   * the document.
+   */
+  payment: {
+    title: '낼 수 있는 방법',
+    subtitle: '문서에 적혀 있는 방법만 보여드립니다.',
+    none: '이 문서에는 내는 방법이 적혀 있지 않습니다.',
+    noneHelp: '문서 뒷면을 보시거나 기관에 물어보세요.',
+    documentSays: '문서에는 이렇게 적혀 있어요',
+    needs: '무엇이 필요한가요',
+    methods: {
+      bank_counter: '은행 창구',
+      post_office: '우체국 창구',
+      convenience_store: '편의점',
+      atm: '현금인출기 (ATM)',
+      internet_banking: '인터넷뱅킹',
+      ars: '전화 자동응답 (ARS)',
+      credit_card: '신용카드',
+      online_portal: '공식 납부 사이트',
+      barcode_app: '휴대폰 바코드 앱',
+      account_transfer: '자동이체',
+      help_desk: '기관 창구 방문',
+    },
+    help: {
+      bank_counter: '문서를 그대로 들고 가면 창구 직원이 해 줍니다.',
+      post_office: '문서를 그대로 들고 가면 창구 직원이 해 줍니다.',
+      convenience_store: '문서를 그대로 계산대에 내면 됩니다.',
+      atm: '카드와 문서의 납부번호가 필요합니다.',
+      internet_banking: '은행 앱이나 홈페이지에 로그인해야 합니다.',
+      ars: '전화를 걸어 안내 음성을 따라갑니다.',
+      credit_card: '카드번호를 넣어야 합니다. 수수료가 붙을 수 있습니다.',
+      online_portal: '공식 납부 사이트에 접속해 납부번호를 넣습니다.',
+      barcode_app: '휴대폰 앱을 열고 문서의 바코드를 찍습니다.',
+      account_transfer: '미리 신청해 두면 다음부터 자동으로 빠져나갑니다.',
+      help_desk: '기관에 직접 찾아가서 물어보며 처리합니다.',
+    },
   },
 
   evidence: {
@@ -309,7 +392,7 @@ export const ko = {
 
   tutorial: {
     listTitle: '나의 문서 매뉴얼',
-    listSubtitle: '경험한 문서 종류별로 확인하는 순서입니다.',
+    listSubtitle: '한 번 해결한 문서는 확인 순서가 여기에 남습니다.',
     empty: '아직 매뉴얼이 없습니다. 문서를 한 번 해결하면 여기에 저장됩니다.',
     emptyAction: '지금 같이 해결하기',
     purpose: '이 문서는 무엇인가요',
@@ -402,20 +485,15 @@ export const ko = {
     providerLabel: '분석 모드',
     providers: {
       openai: '온라인 기본 모드 — OpenAI API',
-      ollamaFast: '빠른 로컬 모드 — Qwen3-VL 4B (권장)',
-      ollamaQuality: '고품질 로컬 모드 — Qwen3-VL 8B (느릴 수 있음)',
-      fixture: '안전 시연 모드 — Fixture Demo',
+      ollamaFast: '로컬 모드 — Qwen3-VL 4B',
+      fixture: '예시 문서 모드 — 네트워크 없이 동작',
     },
     providerHelp: {
       openai: '인터넷이 필요합니다. 사진이 외부 AI로 전송됩니다.',
       ollamaFast: '이 컴퓨터 안에서 처리합니다. 8GB VRAM에서 안정적입니다.',
-      ollamaQuality:
-        '8GB VRAM에서는 느려질 수 있습니다. 발표 전에 반드시 미리 시험하세요.',
       fixture: '네트워크가 없어도 전체 흐름을 보여줄 수 있습니다.',
     },
-    qualityWarning:
-      '고품질 로컬 모드는 전원이 연결되어 있고 다른 GPU 프로그램이 꺼져 있을 때만 사용하세요. 라이브 시연 기본값으로는 권장하지 않습니다.',
-    ollamaStatus: '로컬 서버 상태',
+    ollamaStatus: 'Ollama 연결',
     ollamaReachable: '연결됨',
     ollamaUnreachable: '연결되지 않음. ollama serve 가 실행 중인지 확인하세요.',
     installedModels: '설치된 모델',
@@ -449,10 +527,6 @@ export const ko = {
     body: '이 문서는 AI가 확실하게 읽지 못했습니다. 원문을 다시 보시거나 공식 기관에 문의하세요.',
   },
 
-  goal: {
-    statement:
-      'AI Door의 목표는 사용자가 AI에게 계속 의존하게 만드는 것이 아니라, 같은 유형의 문서를 다음에는 스스로 이해하고 처리할 수 있도록 돕는 것입니다.',
-  },
 };
 
 /**

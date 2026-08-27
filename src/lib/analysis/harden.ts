@@ -12,6 +12,7 @@ import {
   type ActionCard,
   type ContactItem,
   type DocumentAnalysis,
+  type PaymentOption,
   type Language,
   type ModelAnalysis,
   type WarningItem,
@@ -24,6 +25,7 @@ type WarnKey =
   | 'unverifiedDate'
   | 'unverifiedAmount'
   | 'unverifiedContact'
+  | 'unverifiedPayment'
   | 'noEvidence'
   | 'courtDocument'
   | 'medicalDocument'
@@ -41,6 +43,8 @@ const TEXT: Record<Language, Record<WarnKey, string>> = {
       '금액을 원문에서 확실하게 확인하지 못했습니다. 문서의 금액을 직접 확인하세요.',
     unverifiedContact:
       '문서에서 연락처를 확인하지 못했습니다. 기관의 공식 홈페이지에서 번호를 확인하세요.',
+    unverifiedPayment:
+      '문서에 적혀 있지 않은 납부 방법은 지웠습니다. 납부 방법은 고지서 뒷면이나 기관에 확인하세요.',
     noEvidence:
       '원문 근거를 찾지 못한 내용이 있습니다. 확정된 사실로 받아들이지 마세요.',
     courtDocument:
@@ -61,6 +65,8 @@ const TEXT: Record<Language, Record<WarnKey, string>> = {
       '金額を 原本で はっきり 確認できませんでした。文書の 金額を 直接 ご確認ください。',
     unverifiedContact:
       '文書から 連絡先を 確認できませんでした。機関の 公式サイトで 番号を ご確認ください。',
+    unverifiedPayment:
+      '文書に 書かれていない 支払い方法は 消しました。支払い方法は 用紙の 裏面か 窓口で ご確認ください。',
     noEvidence:
       '原文の 根拠が 見つからない 内容が あります。確定した 事実として 受け取らないで ください。',
     courtDocument:
@@ -78,6 +84,7 @@ const TEXT: Record<Language, Record<WarnKey, string>> = {
     unverifiedDate: 'A date could not be verified against the document text.',
     unverifiedAmount: 'An amount could not be verified against the document text.',
     unverifiedContact: 'No contact details were confirmed in the document.',
+    unverifiedPayment: 'Payment routes not stated in the document were removed.',
     noEvidence: 'Some statements have no supporting quote from the document.',
     courtDocument:
       'This looks like a court document. This app does not give legal advice.',
@@ -93,6 +100,7 @@ const SEVERITY: Record<WarnKey, WarningItem['severity']> = {
   unverifiedDate: 'caution',
   unverifiedAmount: 'caution',
   unverifiedContact: 'caution',
+  unverifiedPayment: 'caution',
   noEvidence: 'caution',
   courtDocument: 'critical',
   medicalDocument: 'caution',
@@ -100,6 +108,16 @@ const SEVERITY: Record<WarnKey, WarningItem['severity']> = {
   demoMode: 'info',
   unknownType: 'caution',
 };
+
+const SEVERITY_ORDER: Record<WarningItem['severity'], number> = {
+  critical: 0,
+  caution: 1,
+  info: 2,
+};
+
+function bySeverity(a: WarningItem, b: WarningItem): number {
+  return SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity];
+}
 
 /** Confidence at or below this is treated as "do not present as fact". */
 export const LOW_CONFIDENCE_THRESHOLD = 0.55;
@@ -233,7 +251,22 @@ export function hardenAnalysis(
       };
     });
 
-  // --- Rule 4: document families that must end at a human ------------------
+  // --- Rule 4: a payment route the document does not state is not offered --
+  const paymentOptions: PaymentOption[] = [];
+  const seenMethods = new Set<string>();
+  for (const option of model.paymentOptions) {
+    const evidenceIds = cleanIds(option.evidenceIds);
+    if (evidenceIds.length === 0) {
+      addWarning('unverifiedPayment');
+      continue;
+    }
+    // One row per rail. Two quotes for the same method is one option.
+    if (seenMethods.has(option.method)) continue;
+    seenMethods.add(option.method);
+    paymentOptions.push({ ...option, evidenceIds });
+  }
+
+  // --- Rule 5: document families that must end at a human ------------------
   const isHighRisk = HIGH_RISK_DOCUMENT_TYPES.includes(model.documentType);
   if (model.documentType === 'court_notice') addWarning('courtDocument');
   if (model.documentType === 'health_checkup') addWarning('medicalDocument');
@@ -243,7 +276,7 @@ export function hardenAnalysis(
   }
   if (options.isDemoMode) addWarning('demoMode');
 
-  // --- Rule 5: confidence and the human-review gate ------------------------
+  // --- Rule 6: confidence and the human-review gate ------------------------
   let confidence = model.confidence;
   if (model.evidence.length === 0) {
     confidence = Math.min(confidence, 0.3);
@@ -273,10 +306,13 @@ export function hardenAnalysis(
     importantDates,
     amounts,
     recipientActions,
-    warnings: warnings.slice(0, 10),
+    paymentOptions,
+    // Four at most, and the most serious first: truncating a list that got
+    // long must never be what removes the court or low-confidence warning.
+    warnings: warnings.sort(bySeverity).slice(0, 4),
     officialContacts,
     evidence: model.evidence,
-    uncertainty: Array.from(new Set(uncertainty)).slice(0, 8),
+    uncertainty: Array.from(new Set(uncertainty)).slice(0, 3),
     confidence,
     requiresHumanVerification,
   };

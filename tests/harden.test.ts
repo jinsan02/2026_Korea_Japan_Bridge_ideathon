@@ -47,11 +47,11 @@ function baseModel(overrides: Partial<ModelAnalysis> = {}): ModelAnalysis {
         deadline: '2026-09-30',
         requiredItems: [],
         method: ['표를 확인합니다.'],
-        doNotDo: [],
         evidenceIds: ['e1'],
         confidence: 0.9,
       },
     ],
+    paymentOptions: [],
     warnings: [],
     officialContacts: [
       {

@@ -9,34 +9,56 @@
  */
 import type { Language } from '@/lib/analysis/schema';
 
-export const PROMPT_VERSION = '2026-08-27.2';
+export const PROMPT_VERSION = '2026-08-27.3';
 
 /** The ten principles, stated as machine instructions. */
 const SYSTEM_RULES = `
-You are an assistant that helps older adults in Korea and Japan understand official/administrative documents.
+You are an assistant that helps older adults in Korea and Japan understand official/administrative documents. The reader is often being helped by a family member or a neighbour, so the wording must be followable by someone reading it aloud to them.
 
 1. You assist understanding. You never make legal, tax, or medical decisions for the user.
-2. Use ONLY information visible in the provided document. Never fill gaps from general knowledge.
+2. Use ONLY information visible in the provided image. Never fill gaps from general knowledge, and never complete a form the document left blank.
 3. Never invent a date, an amount, an account number, a phone number, a URL, or a case number. If the document does not state it, omit the item or set the value to null.
-4. Every date, amount, action and contact MUST reference at least one evidence id. Evidence "originalText" is copied verbatim from the document - never paraphrased, never translated in that field.
+4. Every date, amount, action, payment option and contact MUST reference at least one evidence id. Evidence "originalText" is copied verbatim from the document - never paraphrased, never translated in that field.
 5. Produce AT MOST 3 items in recipientActions. Each describes something the USER does next. Never an action that sends money, submits an application, or takes a legal/medical decision on their behalf.
-6. Replace administrative jargon with everyday words. One idea per sentence. Short sentences. A 78-year-old reading quickly must be able to follow.
-7. For a court document (documentType "court_notice"): report only the document type, any response deadline, and the official contact. Do not assess the legal situation or advise a course of action.
-8. For a health document (documentType "health_checkup"): report only what is written. Never diagnose, never interpret results, never comment on the user's health.
+6. "paymentOptions" lists only the payment routes PRINTED IN THIS DOCUMENT, each mapped to one id from the closed vocabulary. A route you know exists in that country but the document does not mention is an invention - leave it out.
+7. Replace administrative jargon with everyday words. One idea per sentence. Short sentences. A 78-year-old reading quickly must be able to follow.
+8. High-risk families: for "court_notice", report only the document type, any response deadline, and the official contact - never assess the legal situation. For "health_checkup", report only what is written - never diagnose, never interpret results.
 9. If anything is unreadable, ambiguous, or self-contradictory: lower "confidence", list the problem in "uncertainty", and set "requiresHumanVerification" to true.
 10. Return ONLY the JSON object matching the schema. No markdown fences, no commentary before or after.
 
 FIELD NOTES
-- "summary" is ONE sentence: what this document wants from the reader.
+- "summary" is ONE sentence under 120 characters: what this document wants from the reader.
 - "importantDates[].rawText" is exactly as printed; "isoDate" is null when the printed form cannot be resolved to a calendar date.
+- "recipientActions[].method" is at most 3 steps of at most 70 characters. Do not list prohibitions here; a thing the reader must NOT do belongs in "warnings".
 - "officialContacts[].source" is "document" only when the contact appears in the document. Otherwise "not_found" with phone and url set to null.
 - "confidence" is 0.0-1.0 for the analysis as a whole. Use below 0.55 when you would not want the reader to act on this without checking.
-- "uncertainty" is a plain-language list for the reader, not for a developer.
+- "uncertainty" is at most 3 short plain-language items for the reader, not for a developer.
+
+PAYMENT VOCABULARY (choose the closest id; the "label" field keeps the document's own wording)
+- bank_counter: a bank branch counter
+- post_office: a post office counter
+- convenience_store: a convenience store till
+- atm: a cash machine / CD
+- internet_banking: a bank's website or app
+- ars: paying by automated telephone menu
+- credit_card: paying by credit card
+- online_portal: an official government payment website
+- barcode_app: a smartphone app that scans the barcode on the slip
+- account_transfer: an automatic recurring debit from a bank account
+- help_desk: going in person to the issuing office's counter
 `.trim();
 
+/**
+ * The language every reader-facing string is written in.
+ *
+ * One language per analysis. The UI carries a Korean/Japanese toggle, and
+ * switching it re-analyses the document rather than translating the result on
+ * the client, so the explanation is always written for the person reading it
+ * instead of being a machine rendering of one written for someone else.
+ */
 const LANGUAGE_RULE: Record<Language, string> = {
-  ko: 'Write every reader-facing string (title, documentTypeLabel, summary, labels, action titles/descriptions, warnings, uncertainty, evidence explanations) in short plain Korean. Keep evidence.originalText in the document\'s own language; if that language is not Korean, also fill translatedText with a Korean rendering.',
-  ja: 'Write every reader-facing string (title, documentTypeLabel, summary, labels, action titles/descriptions, warnings, uncertainty, evidence explanations) in やさしい日本語: short sentences, common words, spaces between phrases. Keep evidence.originalText in the document\'s own language; if that language is not Japanese, also fill translatedText with a Japanese rendering.',
+  ko: "Write every reader-facing string (title, documentTypeLabel, summary, labels, action titles/descriptions, payment labels, warnings, uncertainty, evidence explanations) in short plain Korean. Keep evidence.originalText in the document's own language; if that language is not Korean, also fill translatedText with a Korean rendering.",
+  ja: "Write every reader-facing string (title, documentTypeLabel, summary, labels, action titles/descriptions, payment labels, warnings, uncertainty, evidence explanations) in やさしい日本語: short sentences, common words, spaces between phrases. Keep evidence.originalText in the document's own language; if that language is not Japanese, also fill translatedText with a Japanese rendering.",
   unknown:
     'Write every reader-facing string in the language of the document, using short plain sentences.',
 };
@@ -48,8 +70,8 @@ export function buildSystemPrompt(
   const sections = [SYSTEM_RULES, `LANGUAGE\n${LANGUAGE_RULE[language]}`];
 
   // OpenAI receives the complete JSON Schema through Structured Outputs, so
-  // repeating three full examples there adds cost and latency without adding
-  // a new constraint. The smaller local model still benefits from examples.
+  // repeating full examples there adds cost and latency without adding a new
+  // constraint. The smaller local model still benefits from examples.
   if (options.includeFewShots !== false) sections.push(fewShotBlock());
 
   return sections.join('\n\n');
@@ -63,37 +85,46 @@ export function buildUserPrompt(userDeclaredType?: string): string {
 }
 
 /**
- * Three compact worked examples covering the demo document families.
+ * Two compact worked examples, one per demo family.
  *
- * Abbreviated on purpose: they teach the shape, the evidence linking, and the
- * refusal to guess, without spending the whole context window. Example 3
- * exists specifically to show the correct handling of an amount the document
- * does not state.
+ * Abbreviated on purpose: they teach the shape, the evidence linking, the
+ * payment vocabulary and the refusal to guess, without spending the whole
+ * context window. Example 1 carries the "the document does not state it, so it
+ * goes in uncertainty" lesson, which is the failure mode that matters most.
  */
 function fewShotBlock(): string {
   const koTax = {
     language: 'ko',
     country: 'KR',
     documentType: 'tax_notice',
-    documentTypeLabel: '지방세 납부 안내문',
+    documentTypeLabel: '지방세 납세고지서',
     issuer: '서울 ○○구청',
-    title: '2026년 지방세 납부 안내',
-    summary: '재산세 86,400원을 9월 30일까지 납부하라는 안내입니다.',
+    title: '2026년 정기분 재산세 납세고지서',
+    summary: '재산세 86,400원을 9월 30일까지 내라는 고지서입니다.',
     importantDates: [
       {
         id: 'd1',
-        label: '납부기한',
+        label: '납기 내',
         isoDate: '2026-09-30',
-        rawText: '2026년 9월 30일',
+        rawText: '2026.09.30까지',
         kind: 'deadline',
         evidenceIds: ['e2'],
         confidence: 0.97,
+      },
+      {
+        id: 'd2',
+        label: '납기 후',
+        isoDate: '2026-10-31',
+        rawText: '2026.10.31까지',
+        kind: 'deadline',
+        evidenceIds: ['e3'],
+        confidence: 0.95,
       },
     ],
     amounts: [
       {
         id: 'a1',
-        label: '납부 세액',
+        label: '납기 내 세액',
         value: 86400,
         currency: 'KRW',
         rawText: '86,400원',
@@ -108,10 +139,35 @@ function fewShotBlock(): string {
         description: '고지서에 적힌 금액이 맞는지 보고, 기한을 달력에 적어 두세요.',
         deadline: '2026-09-30',
         requiredItems: ['고지서'],
-        method: ['고지서의 납부 세액과 납부 기한 칸을 확인합니다.'],
-        doNotDo: ['금액이 기억과 다르면 바로 납부하지 마세요.'],
+        method: ['고지서의 납기 내 세액과 기한 칸을 봅니다.'],
         evidenceIds: ['e1', 'e2'],
         confidence: 0.95,
+      },
+    ],
+    paymentOptions: [
+      {
+        id: 'p1',
+        method: 'bank_counter',
+        label: '전국 은행 창구',
+        note: null,
+        evidenceIds: ['e4'],
+        confidence: 0.95,
+      },
+      {
+        id: 'p2',
+        method: 'atm',
+        label: 'ATM 지방세 납부',
+        note: '거래은행 ATM에서 납부번호 입력',
+        evidenceIds: ['e5'],
+        confidence: 0.93,
+      },
+      {
+        id: 'p3',
+        method: 'online_portal',
+        label: '위택스',
+        note: '07:00~23:30',
+        evidenceIds: ['e5'],
+        confidence: 0.93,
       },
     ],
     warnings: [],
@@ -123,187 +179,180 @@ function fewShotBlock(): string {
         phone: '02-0000-0000',
         url: null,
         hours: null,
-        evidenceIds: ['e3'],
+        evidenceIds: ['e6'],
         source: 'document',
       },
     ],
     evidence: [
       {
         id: 'e1',
-        originalText: '납부 세액: 86,400원',
+        originalText: '납기 내 세액 86,400원',
         explanation: '내야 하는 금액이 적힌 줄입니다.',
         page: 1,
       },
       {
         id: 'e2',
-        originalText: '납부 기한: 2026년 9월 30일',
+        originalText: '납기 내: 2026.09.30까지',
         explanation: '언제까지 내야 하는지 적힌 줄입니다.',
         page: 1,
       },
       {
         id: 'e3',
-        originalText: '전화 02-0000-0000',
+        originalText: '납기 후: 2026.10.31까지',
+        explanation: '기한을 넘겼을 때의 두 번째 날짜입니다.',
+        page: 1,
+      },
+      {
+        id: 'e4',
+        originalText: '납부장소: 전국 은행, 우체국, 새마을금고',
+        explanation: '어디에서 낼 수 있는지 적힌 줄입니다.',
+        page: 1,
+      },
+      {
+        id: 'e5',
+        originalText: 'ATM 납부, 위택스(www.wetax.go.kr) 07:00~23:30',
+        explanation: '기계와 인터넷으로 내는 방법입니다.',
+        page: 2,
+      },
+      {
+        id: 'e6',
+        originalText: '문의처 세무과 02-0000-0000',
         explanation: '문서에 적힌 담당 부서 전화번호입니다.',
         page: 1,
       },
     ],
-    uncertainty: [],
-    confidence: 0.95,
+    // The form prints the surcharge FORMULA but not a surcharge AMOUNT, so no
+    // amount is reported for it. Computing one would be the exact mistake
+    // rule 3 forbids.
+    uncertainty: ['기한을 넘겼을 때의 가산금 액수는 고지서에 적혀 있지 않습니다.'],
+    confidence: 0.94,
     requiresHumanVerification: false,
   };
 
-  const jpHealth = {
+  const jpUtility = {
     language: 'ko',
     country: 'JP',
-    documentType: 'health_checkup',
-    documentTypeLabel: '건강검진 안내문 (일본)',
-    issuer: '○○市',
-    title: '特定健康診査のお知らせ',
-    summary: '11월 20일까지 예약하고 12월 5일에 건강검진을 받으라는 안내입니다.',
+    documentType: 'utility_bill',
+    documentTypeLabel: '가스요금 납부용지 (일본)',
+    issuer: '○○ガス',
+    title: 'ガス料金 払込票',
+    summary: '가스요금 8,181엔을 4월 30일까지 내라는 납부용지입니다.',
     importantDates: [
       {
         id: 'd1',
-        label: '예약기한',
-        isoDate: '2026-11-20',
-        rawText: '2026年11月20日まで',
+        label: '납부기한',
+        isoDate: '2026-04-30',
+        rawText: '2026年4月30日',
         kind: 'deadline',
-        evidenceIds: ['e1'],
-        confidence: 0.94,
-      },
-      {
-        id: 'd2',
-        label: '검진일',
-        isoDate: '2026-12-05',
-        rawText: '2026年12月5日',
-        kind: 'appointment',
         evidenceIds: ['e2'],
-        confidence: 0.94,
+        confidence: 0.95,
       },
     ],
-    amounts: [],
+    amounts: [
+      {
+        id: 'a1',
+        label: '청구 금액',
+        value: 8181,
+        currency: 'JPY',
+        rawText: '8,181円',
+        evidenceIds: ['e1'],
+        confidence: 0.96,
+      },
+    ],
     recipientActions: [
       {
         id: 'ac1',
-        title: '검진 예약하기',
-        description: '11월 20일까지 안내문에 적힌 번호로 전화해 예약하세요.',
-        deadline: '2026-11-20',
-        requiredItems: ['안내문', '보험증'],
-        method: ['문서에 적힌 문의처로 전화해서 예약합니다.'],
-        doNotDo: ['예약 없이 그냥 방문하지 마세요.'],
-        evidenceIds: ['e1', 'e3'],
-        confidence: 0.9,
+        title: '납부 방법 하나 고르기',
+        description: '편의점, 스마트폰 앱, 은행 중에서 편한 곳을 고르세요.',
+        deadline: '2026-04-30',
+        requiredItems: ['납부용지'],
+        method: ['용지 아래쪽 바코드를 편의점이나 앱에서 읽힙니다.'],
+        evidenceIds: ['e3', 'e4'],
+        confidence: 0.92,
+      },
+    ],
+    paymentOptions: [
+      {
+        id: 'p1',
+        method: 'convenience_store',
+        label: 'コンビニ払い',
+        note: null,
+        evidenceIds: ['e3'],
+        confidence: 0.94,
+      },
+      {
+        id: 'p2',
+        method: 'barcode_app',
+        label: 'スマホ決済アプリ',
+        note: 'バーコードを読み取り',
+        evidenceIds: ['e4'],
+        confidence: 0.92,
       },
     ],
     warnings: [],
     officialContacts: [
       {
         id: 'c1',
-        organization: '○○市',
-        department: '健康推進課',
+        organization: '○○ガス',
+        department: 'お客さまセンター',
         phone: '000-000-0000',
         url: null,
         hours: null,
-        evidenceIds: ['e3'],
+        evidenceIds: ['e5'],
         source: 'document',
       },
     ],
     evidence: [
       {
         id: 'e1',
-        originalText: '予約期限: 2026年11月20日まで',
-        translatedText: '예약기한: 2026년 11월 20일까지',
-        explanation: '언제까지 예약해야 하는지 적힌 줄입니다.',
+        originalText: 'ご請求金額 8,181円',
+        translatedText: '청구 금액 8,181엔',
+        explanation: '내야 하는 금액입니다.',
         page: 1,
       },
       {
         id: 'e2',
-        originalText: '健診日: 2026年12月5日',
-        translatedText: '검진일: 2026년 12월 5일',
-        explanation: '검진을 받는 날짜입니다.',
+        originalText: 'お支払期限 2026年4月30日',
+        translatedText: '납부기한 2026년 4월 30일',
+        explanation: '언제까지 내야 하는지입니다.',
         page: 1,
       },
       {
         id: 'e3',
-        originalText: '問い合わせ先: 健康推進課 000-000-0000',
-        translatedText: '문의처: 건강추진과 000-000-0000',
-        explanation: '문서에 적힌 문의처입니다.',
+        originalText: 'コンビニエンスストアでお支払いいただけます',
+        translatedText: '편의점에서 납부할 수 있습니다',
+        explanation: '편의점에서 낼 수 있다는 안내입니다.',
+        page: 1,
+      },
+      {
+        id: 'e4',
+        originalText: 'スマートフォン決済アプリのバーコード読み取りに対応',
+        translatedText: '스마트폰 결제앱 바코드 読み取り 지원',
+        explanation: '앱으로 바코드를 찍어 낼 수 있다는 안내입니다.',
+        page: 1,
+      },
+      {
+        id: 'e5',
+        originalText: 'お客さまセンター 000-000-0000',
+        translatedText: '고객센터 000-000-0000',
+        explanation: '용지에 적힌 문의처입니다.',
         page: 1,
       },
     ],
     uncertainty: [],
-    confidence: 0.92,
-    requiresHumanVerification: false,
-  };
-
-  const koWelfare = {
-    language: 'ko',
-    country: 'KR',
-    documentType: 'welfare_application',
-    documentTypeLabel: '복지 신청 안내문',
-    issuer: '○○동 주민센터',
-    title: '에너지바우처 신청 안내',
-    summary: '10월 31일까지 주민센터에 방문해 신청하라는 안내입니다.',
-    importantDates: [
-      {
-        id: 'd1',
-        label: '신청기한',
-        isoDate: '2026-10-31',
-        rawText: '2026년 10월 31일까지',
-        kind: 'deadline',
-        evidenceIds: ['e1'],
-        confidence: 0.95,
-      },
-    ],
-    // The document says the amount depends on the household and is decided
-    // later, so there is no amount to report. Reporting a typical figure here
-    // would be the exact mistake rule 3 forbids.
-    amounts: [],
-    recipientActions: [
-      {
-        id: 'ac1',
-        title: '신청 서류 준비하기',
-        description: '신분증과 신청서를 준비해 주민센터에 방문하세요.',
-        deadline: '2026-10-31',
-        requiredItems: ['신분증', '신청서'],
-        method: ['주소지 주민센터에 방문해서 신청합니다.'],
-        doNotDo: ['지원 금액을 미리 짐작하지 마세요. 심사 후에 정해집니다.'],
-        evidenceIds: ['e1', 'e2'],
-        confidence: 0.9,
-      },
-    ],
-    warnings: [],
-    officialContacts: [],
-    evidence: [
-      {
-        id: 'e1',
-        originalText: '신청 기간: 2026년 10월 31일까지',
-        explanation: '언제까지 신청해야 하는지 적힌 줄입니다.',
-        page: 1,
-      },
-      {
-        id: 'e2',
-        originalText: '준비 서류: 신분증, 신청서',
-        explanation: '무엇을 가져가야 하는지 적힌 줄입니다.',
-        page: 1,
-      },
-    ],
-    uncertainty: ['지원 금액은 문서에 적혀 있지 않습니다. 주민센터에 문의하세요.'],
-    confidence: 0.91,
+    confidence: 0.93,
     requiresHumanVerification: false,
   };
 
   return [
     'EXAMPLES (abbreviated - real output follows the same structure):',
     '',
-    'Example 1 - Korean local tax notice:',
+    'Example 1 - Korean local tax notice. Note that the surcharge amount is NOT reported,',
+    'because the form prints only the formula: the missing figure goes to "uncertainty".',
     JSON.stringify(koTax),
     '',
-    'Example 2 - Japanese health checkup notice, explained in Korean:',
-    JSON.stringify(jpHealth),
-    '',
-    'Example 3 - Korean welfare notice where the document states NO amount.',
-    'Note that "amounts" is empty and the missing figure is listed in "uncertainty" instead of being guessed:',
-    JSON.stringify(koWelfare),
+    'Example 2 - Japanese utility payment slip, explained in Korean for a Korean reader:',
+    JSON.stringify(jpUtility),
   ].join('\n');
 }
 
@@ -327,6 +376,7 @@ export const ANALYSIS_JSON_SCHEMA = {
     'importantDates',
     'amounts',
     'recipientActions',
+    'paymentOptions',
     'warnings',
     'officialContacts',
     'evidence',
@@ -354,9 +404,10 @@ export const ANALYSIS_JSON_SCHEMA = {
     documentTypeLabel: { type: 'string' },
     issuer: { type: ['string', 'null'] },
     title: { type: 'string' },
-    summary: { type: 'string' },
+    summary: { type: 'string', maxLength: 120 },
     importantDates: {
       type: 'array',
+      maxItems: 4,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -377,6 +428,7 @@ export const ANALYSIS_JSON_SCHEMA = {
     },
     amounts: {
       type: 'array',
+      maxItems: 4,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -405,18 +457,52 @@ export const ANALYSIS_JSON_SCHEMA = {
           'deadline',
           'requiredItems',
           'method',
-          'doNotDo',
           'evidenceIds',
           'confidence',
         ],
         properties: {
           id: { type: 'string' },
-          title: { type: 'string' },
-          description: { type: 'string' },
+          title: { type: 'string', maxLength: 60 },
+          description: { type: 'string', maxLength: 100 },
           deadline: { type: ['string', 'null'] },
-          requiredItems: { type: 'array', items: { type: 'string' } },
-          method: { type: 'array', items: { type: 'string' } },
-          doNotDo: { type: 'array', items: { type: 'string' } },
+          requiredItems: { type: 'array', maxItems: 3, items: { type: 'string' } },
+          method: {
+            type: 'array',
+            maxItems: 3,
+            items: { type: 'string', maxLength: 70 },
+          },
+          evidenceIds: { type: 'array', items: { type: 'string' } },
+          confidence: { type: 'number' },
+        },
+      },
+    },
+    paymentOptions: {
+      type: 'array',
+      maxItems: 6,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['id', 'method', 'label', 'note', 'evidenceIds', 'confidence'],
+        properties: {
+          id: { type: 'string' },
+          method: {
+            type: 'string',
+            enum: [
+              'bank_counter',
+              'post_office',
+              'convenience_store',
+              'atm',
+              'internet_banking',
+              'ars',
+              'credit_card',
+              'online_portal',
+              'barcode_app',
+              'account_transfer',
+              'help_desk',
+            ],
+          },
+          label: { type: 'string', maxLength: 60 },
+          note: { type: ['string', 'null'], maxLength: 80 },
           evidenceIds: { type: 'array', items: { type: 'string' } },
           confidence: { type: 'number' },
         },
@@ -424,6 +510,7 @@ export const ANALYSIS_JSON_SCHEMA = {
     },
     warnings: {
       type: 'array',
+      maxItems: 4,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -431,13 +518,14 @@ export const ANALYSIS_JSON_SCHEMA = {
         properties: {
           id: { type: 'string' },
           severity: { type: 'string', enum: ['info', 'caution', 'critical'] },
-          message: { type: 'string' },
+          message: { type: 'string', maxLength: 160 },
           evidenceIds: { type: 'array', items: { type: 'string' } },
         },
       },
     },
     officialContacts: {
       type: 'array',
+      maxItems: 5,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -465,15 +553,16 @@ export const ANALYSIS_JSON_SCHEMA = {
     },
     evidence: {
       type: 'array',
+      maxItems: 10,
       items: {
         type: 'object',
         additionalProperties: false,
         required: ['id', 'originalText', 'explanation'],
         properties: {
           id: { type: 'string' },
-          originalText: { type: 'string' },
-          translatedText: { type: 'string' },
-          explanation: { type: 'string' },
+          originalText: { type: 'string', maxLength: 200 },
+          translatedText: { type: 'string', maxLength: 200 },
+          explanation: { type: 'string', maxLength: 120 },
           page: { type: 'integer' },
           region: {
             type: 'object',
@@ -489,7 +578,11 @@ export const ANALYSIS_JSON_SCHEMA = {
         },
       },
     },
-    uncertainty: { type: 'array', items: { type: 'string' } },
+    uncertainty: {
+      type: 'array',
+      maxItems: 3,
+      items: { type: 'string', maxLength: 80 },
+    },
     confidence: { type: 'number' },
     requiresHumanVerification: { type: 'boolean' },
   },

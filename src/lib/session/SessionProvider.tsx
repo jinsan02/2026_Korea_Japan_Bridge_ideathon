@@ -54,8 +54,6 @@ interface PersistedState {
   language: UiLanguage;
   condition: ConditionId;
   provider: ProviderId;
-  /** Opt-in Ollama 8B. Never on by default. */
-  qualityMode: boolean;
   fixtureId: string;
   textScale: TextScale;
   startedAt: number;
@@ -72,6 +70,15 @@ interface StoredImage {
 
 interface SessionContextValue extends PersistedState {
   t: Dictionary;
+  /**
+   * False until sessionStorage has been read back.
+   *
+   * Anything that acts on session state as soon as it mounts must wait for
+   * this. A hard load straight onto /analyzing would otherwise fire its
+   * request against the defaults and analyse the wrong document - which on
+   * stage looks exactly like the model getting it wrong.
+   */
+  hydrated: boolean;
   conditionDefinition: ConditionDefinition;
   /** The user's photo. Memory only - never persisted, never logged. */
   image: StoredImage | null;
@@ -79,7 +86,7 @@ interface SessionContextValue extends PersistedState {
 
   setLanguage: (language: UiLanguage) => void;
   setCondition: (condition: ConditionId) => void;
-  setProvider: (provider: ProviderId, qualityMode?: boolean) => void;
+  setProvider: (provider: ProviderId) => void;
   setFixtureId: (fixtureId: string) => void;
   setTextScale: (scale: TextScale) => void;
   setImage: (image: StoredImage | null) => void;
@@ -103,7 +110,6 @@ function initialState(): PersistedState {
     language: DEFAULT_LANGUAGE,
     condition: DEFAULT_CONDITION,
     provider: 'fixture',
-    qualityMode: false,
     fixtureId: DEFAULT_FIXTURE_ID,
     textScale: 'normal',
     startedAt: Date.now(),
@@ -187,6 +193,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const value = useMemo<SessionContextValue>(() => {
     return {
       ...state,
+      hydrated,
       t: getDictionary(state.language),
       conditionDefinition: getCondition(state.condition),
       image: imageRef.current,
@@ -194,8 +201,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       setLanguage: (language) => setState((prev) => ({ ...prev, language })),
       setCondition: (condition) => setState((prev) => ({ ...prev, condition })),
-      setProvider: (provider, qualityMode = false) =>
-        setState((prev) => ({ ...prev, provider, qualityMode })),
+      setProvider: (provider) => setState((prev) => ({ ...prev, provider })),
       setFixtureId: (fixtureId) => setState((prev) => ({ ...prev, fixtureId })),
       setTextScale: (textScale) => setState((prev) => ({ ...prev, textScale })),
       setImage: (next) => {
@@ -219,7 +225,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           language: prev.language,
           condition: prev.condition,
           provider: prev.provider,
-          qualityMode: prev.qualityMode,
           fixtureId: prev.fixtureId,
           textScale: prev.textScale,
         }));
@@ -228,7 +233,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
     // imageVersion is the signal that the ref changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, imageVersion, logEvent]);
+  }, [state, imageVersion, hydrated, logEvent]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

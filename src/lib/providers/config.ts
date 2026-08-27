@@ -50,7 +50,10 @@ export const serverConfig = {
    * Whether the browser may request a provider. Handy on stage, risky in
    * production, so it is a switch rather than an assumption.
    */
-  allowClientProviderOverride: bool('ALLOW_CLIENT_PROVIDER_OVERRIDE', true),
+  allowClientProviderOverride: bool(
+    'ALLOW_CLIENT_PROVIDER_OVERRIDE',
+    process.env.NODE_ENV !== 'production',
+  ),
 
   openai: {
     apiKey: str('OPENAI_API_KEY'),
@@ -67,11 +70,6 @@ export const serverConfig = {
     baseUrl: str('OLLAMA_BASE_URL', 'http://127.0.0.1:11434').replace(/\/+$/, ''),
     /** 4B is the live-demo default: it fits comfortably in 8GB VRAM. */
     model: str('OLLAMA_MODEL', 'qwen3-vl:4b'),
-    /**
-     * 8B is opt-in only. On an 8GB card, image plus long context can spill to
-     * system RAM, so it must never be the live-demo default.
-     */
-    qualityModel: str('OLLAMA_QUALITY_MODEL', 'qwen3-vl:8b'),
     // The bilingual extraction prompt + full JSON schema exceeds a practical
     // 4K budget. Qwen3-VL 4B still fits this 8K context on the 8GB demo GPU.
     numCtx: int('OLLAMA_NUM_CTX', 8_192),
@@ -93,6 +91,9 @@ export const serverConfig = {
 
   /** One retry on schema failure, then Fixture Demo. Never an infinite loop. */
   maxSchemaRetries: int('MAX_SCHEMA_RETRIES', 1),
+
+  /** Image analyses per address per minute. Per-instance; a cost guard only. */
+  analyzeRateLimitPerMinute: int('ANALYZE_RATE_LIMIT_PER_MINUTE', 10),
 
   experimentLog: {
     enabled: bool('EXPERIMENT_LOG_ENABLED', true),

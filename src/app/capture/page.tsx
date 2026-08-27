@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 import { AppShell } from '@/components/AppShell';
 import { DocumentPageView } from '@/components/DocumentPageView';
-import { DOCUMENT_FIXTURES } from '@/lib/fixtures/documents';
+import { VISIBLE_DOCUMENT_FIXTURES } from '@/lib/fixtures/documents';
 import { prepareImage } from '@/lib/util/image';
 import { useSession } from '@/lib/session/SessionProvider';
 
@@ -44,7 +44,8 @@ export default function CaptureScreen() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const selected =
-    DOCUMENT_FIXTURES.find((fixture) => fixture.id === fixtureId) ?? DOCUMENT_FIXTURES[0];
+    VISIBLE_DOCUMENT_FIXTURES.find((fixture) => fixture.id === fixtureId) ??
+    VISIBLE_DOCUMENT_FIXTURES[0];
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
@@ -181,7 +182,7 @@ export default function CaptureScreen() {
           </div>
 
           <div className="stack stack--tight">
-            {DOCUMENT_FIXTURES.map((fixture) => {
+            {VISIBLE_DOCUMENT_FIXTURES.map((fixture) => {
               const label = language === 'ja' ? JA_FIXTURE_LABELS[fixture.id] : undefined;
               return (
                 <label

@@ -30,7 +30,6 @@ export async function GET() {
       ollama: {
         baseUrl: serverConfig.ollama.baseUrl,
         model: serverConfig.ollama.model,
-        qualityModel: serverConfig.ollama.qualityModel,
         numCtx: serverConfig.ollama.numCtx,
         reachable: ollama.reachable,
         installedModels: ollama.models,

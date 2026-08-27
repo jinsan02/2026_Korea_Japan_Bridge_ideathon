@@ -2,16 +2,24 @@
  * Synthetic demo documents and their verified analyses.
  *
  * SAFETY: every document here is invented for this demo.
- * - Agency names use ○○ placeholders and name no real office.
+ * - Agency and company names use ○○ placeholders and name no real body.
  * - Phone numbers use 0000 patterns that cannot be dialled.
  * - There are no account numbers and no resident registration numbers.
+ * - Barcodes are decorative patterns that encode nothing.
  * Never replace these with a real citizen's document.
  *
  * The stored analysis is what FixtureProvider returns. It is written in exactly
  * the shape a live model must produce, so switching provider changes where the
  * data comes from and nothing else.
+ *
+ * TWO documents are shown: the Korean local tax notice and the Japanese gas
+ * slip, the second of which continues into the payment-app screen. The health
+ * checkup and welfare notices below are complete and tested but hidden from
+ * the picker - they are the proof the pipeline is not hard-wired to two
+ * documents, not part of the demo.
  */
 import type { DocumentTypeId, Language, ModelAnalysis } from '@/lib/analysis/schema';
+import type { Surface } from '@/lib/learning/entry-choices';
 import {
   type SyntheticDocumentPage,
   PAGE_HEIGHT,
@@ -20,6 +28,18 @@ import {
   fieldRow,
   quoteOf,
 } from './document-page';
+import { krTaxAnalysisKo, krTaxPage } from './demo-kr-tax';
+import {
+  jpAppAnalysisKo,
+  jpAppPage,
+  jpGasAnalysisKo,
+  jpGasPage,
+} from './demo-jp-utility';
+import {
+  jpAppAnalysisJa,
+  jpGasAnalysisJa,
+  krTaxAnalysisJa,
+} from './demo-ja';
 
 export interface DocumentFixture {
   id: string;
@@ -34,272 +54,29 @@ export interface DocumentFixture {
   icon: string;
   page: SyntheticDocumentPage;
   /**
+   * Paper or phone screen. Changes what the reader is offered: you point at a
+   * line on paper, but at a button on a screen.
+   */
+  surface?: Surface;
+  /**
+   * Kept working but not offered. Hiding rather than deleting means the extra
+   * document families still typecheck and still run in tests, so the claim
+   * "this generalises past the two we demo" stays checkable.
+   */
+  hidden?: boolean;
+  /**
+   * The next screen this document leads to, when solving it does not end on
+   * paper. The Japanese slip hands the reader to a payment app, and that app
+   * screen is the second half of the same task.
+   */
+  continuesTo?: string;
+  /**
    * Analyses keyed by the language the explanation is written in. Korean is
    * always present; Japanese is provided where the demo needs it. A missing
    * language falls back to Korean rather than showing an empty screen.
    */
   analysisByLanguage: Partial<Record<'ko' | 'ja', ModelAnalysis>>;
 }
-
-// ===========================================================================
-// 1. 한국 지방세 납부 안내문 - 메인 시나리오
-// ===========================================================================
-
-const taxPage: SyntheticDocumentPage = {
-  width: PAGE_WIDTH,
-  height: PAGE_HEIGHT,
-  rules: [150, 290, 600, 870],
-  blocks: [
-    { id: 'org', text: '서울 ○○구청', x: 72, y: 56, width: 400, height: 44, style: 'org' },
-    { id: 'org-dept', text: '세무과', x: 72, y: 104, width: 300, height: 32, style: 'fine' },
-    {
-      id: 'title',
-      text: '2026년 지방세 납부 안내',
-      x: 72,
-      y: 180,
-      width: 656,
-      height: 52,
-      style: 'title',
-    },
-    {
-      id: 'subtitle',
-      text: '아래 내용을 확인하시고 기한 안에 납부하여 주시기 바랍니다.',
-      x: 72,
-      y: 238,
-      width: 656,
-      height: 34,
-      style: 'subtitle',
-    },
-    ...fieldRow({ idPrefix: 'target', label: '과세 대상', value: '주택 (서울 ○○구)', y: 310 }),
-    ...fieldRow({ idPrefix: 'taxitem', label: '세목', value: '재산세', y: 366 }),
-    ...fieldRow({ idPrefix: 'amount', label: '납부 세액', value: '86,400원', y: 422, strong: true }),
-    ...fieldRow({
-      idPrefix: 'deadline',
-      label: '납부 기한',
-      value: '2026년 9월 30일',
-      y: 478,
-      strong: true,
-    }),
-    ...fieldRow({
-      idPrefix: 'paynum',
-      label: '전자납부번호',
-      value: '0000-0000-0000-0000',
-      y: 534,
-    }),
-    {
-      id: 'surcharge-label',
-      text: '가산금 안내',
-      x: 72,
-      y: 622,
-      width: 656,
-      height: 36,
-      style: 'sectionLabel',
-    },
-    {
-      id: 'surcharge-body',
-      text: '납부기한이 지나면 가산금이 더해질 수 있습니다.',
-      x: 72,
-      y: 662,
-      width: 656,
-      height: 40,
-      style: 'body',
-    },
-    {
-      id: 'method-label',
-      text: '납부 방법',
-      x: 72,
-      y: 726,
-      width: 656,
-      height: 36,
-      style: 'sectionLabel',
-    },
-    {
-      id: 'method-body',
-      text: '은행 창구, 공식 납부 사이트 또는 무인 납부기를 이용할 수 있습니다.',
-      x: 72,
-      y: 766,
-      width: 656,
-      height: 44,
-      style: 'body',
-    },
-    {
-      id: 'contact-label',
-      text: '담당 부서 및 문의처',
-      x: 72,
-      y: 892,
-      width: 656,
-      height: 36,
-      style: 'sectionLabel',
-    },
-    {
-      id: 'contact-dept',
-      text: '서울 ○○구청 세무과',
-      x: 72,
-      y: 932,
-      width: 656,
-      height: 36,
-      style: 'body',
-    },
-    {
-      id: 'contact-phone',
-      text: '전화 02-0000-0000',
-      x: 72,
-      y: 972,
-      width: 656,
-      height: 40,
-      style: 'body',
-    },
-    {
-      id: 'synthetic-note',
-      text: '이 문서는 시연용으로 만든 합성문서입니다. 실제 고지서가 아닙니다.',
-      x: 72,
-      y: 1052,
-      width: 656,
-      height: 34,
-      style: 'fine',
-    },
-  ],
-};
-
-const taxAnalysisKo: ModelAnalysis = {
-  language: 'ko',
-  country: 'KR',
-  documentType: 'tax_notice',
-  documentTypeLabel: '지방세 납부 안내문',
-  issuer: '서울 ○○구청',
-  title: '2026년 지방세 납부 안내',
-  summary: '재산세 86,400원을 9월 30일까지 납부하라는 안내입니다.',
-  importantDates: [
-    {
-      id: 'd-deadline',
-      label: '납부기한',
-      isoDate: '2026-09-30',
-      rawText: '2026년 9월 30일',
-      kind: 'deadline',
-      evidenceIds: ['ev-deadline'],
-      confidence: 0.97,
-    },
-  ],
-  amounts: [
-    {
-      id: 'am-tax',
-      label: '납부 세액',
-      value: 86400,
-      currency: 'KRW',
-      rawText: '86,400원',
-      evidenceIds: ['ev-amount'],
-      confidence: 0.97,
-    },
-  ],
-  recipientActions: [
-    {
-      id: 'act-check',
-      title: '얼마를 언제까지 내는지 확인하기',
-      description: '고지서에 적힌 금액과 기한을 확인하고 달력에 적어 두세요.',
-      deadline: '2026-09-30',
-      requiredItems: ['고지서'],
-      method: ['고지서의 "납부 세액"과 "납부 기한" 칸을 확인합니다.'],
-      doNotDo: ['기억하던 금액과 다르면 그대로 납부하지 마세요.'],
-      evidenceIds: ['ev-amount', 'ev-deadline'],
-      confidence: 0.96,
-    },
-    {
-      id: 'act-pay',
-      title: '안전한 납부 방법 확인하기',
-      description: '공식 납부 경로만 안내합니다. AI가 대신 납부하지 않습니다.',
-      deadline: '2026-09-30',
-      requiredItems: ['전자납부번호', '납부할 계좌 또는 카드'],
-      method: [
-        '은행 창구나 구청의 공식 납부 사이트를 이용합니다.',
-        '고지서에 적힌 전자납부번호를 사용합니다.',
-      ],
-      doNotDo: [
-        '문자로 받은 링크로 납부하지 마세요.',
-        '개인 계좌로 송금하라는 요구에 응하지 마세요.',
-      ],
-      evidenceIds: ['ev-method', 'ev-paynum'],
-      confidence: 0.93,
-    },
-    {
-      id: 'act-contact',
-      title: '구청에 직접 문의하기',
-      description: '문서에 적힌 담당 부서와 전화번호를 보여드립니다.',
-      deadline: null,
-      requiredItems: ['고지서'],
-      method: ['문서 아래쪽에 적힌 세무과 번호로 전화합니다.'],
-      doNotDo: ['검색해서 나온 번호보다 문서에 적힌 번호를 먼저 확인하세요.'],
-      evidenceIds: ['ev-contact'],
-      confidence: 0.95,
-    },
-  ],
-  warnings: [],
-  officialContacts: [
-    {
-      id: 'c-tax-office',
-      organization: '서울 ○○구청',
-      department: '세무과',
-      phone: '02-0000-0000',
-      url: null,
-      hours: null,
-      evidenceIds: ['ev-contact'],
-      source: 'document',
-    },
-  ],
-  evidence: [
-    {
-      id: 'ev-type',
-      originalText: quoteOf(taxPage, 'title'),
-      explanation: '무슨 문서인지 알려주는 제목입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'title'),
-    },
-    {
-      id: 'ev-issuer',
-      originalText: quoteOf(taxPage, 'org'),
-      explanation: '이 문서를 보낸 기관입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'org'),
-    },
-    {
-      id: 'ev-amount',
-      originalText: '납부 세액: 86,400원',
-      explanation: '내야 하는 금액이 적힌 줄입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'amount-value'),
-    },
-    {
-      id: 'ev-deadline',
-      originalText: '납부 기한: 2026년 9월 30일',
-      explanation: '언제까지 내야 하는지 적힌 줄입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'deadline-value'),
-    },
-    {
-      id: 'ev-paynum',
-      originalText: quoteOf(taxPage, 'paynum-value'),
-      explanation: '납부할 때 사용하는 번호입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'paynum-value'),
-    },
-    {
-      id: 'ev-method',
-      originalText: quoteOf(taxPage, 'method-body'),
-      explanation: '문서가 알려주는 공식 납부 방법입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'method-body'),
-    },
-    {
-      id: 'ev-contact',
-      originalText: quoteOf(taxPage, 'contact-phone'),
-      explanation: '문서에 적힌 담당 부서 전화번호입니다.',
-      page: 1,
-      region: bboxOf(taxPage, 'contact-phone'),
-    },
-  ],
-  uncertainty: [],
-  confidence: 0.95,
-  requiresHumanVerification: false,
-};
 
 // ===========================================================================
 // 2. 일본 건강검진 안내문 - 확장 시나리오 (일본어 원문 + 한국어 설명)
@@ -460,7 +237,6 @@ const healthAnalysisKo: ModelAnalysis = {
       deadline: '2026-11-20',
       requiredItems: ['안내문'],
       method: ['문서 아래쪽에 적힌 건강추진과 번호로 전화합니다.'],
-      doNotDo: ['예약하지 않고 그냥 방문하지 마세요.'],
       evidenceIds: ['ev-reserve', 'ev-contact'],
       confidence: 0.92,
     },
@@ -474,7 +250,6 @@ const healthAnalysisKo: ModelAnalysis = {
         '검사 전날 밤 9시 이후에는 음식을 먹지 않습니다. 물은 마실 수 있습니다.',
         '검진 당일 보험증과 안내문을 챙깁니다.',
       ],
-      doNotDo: ['복용 중인 약을 임의로 끊지 마세요. 먼저 알려야 합니다.'],
       evidenceIds: ['ev-fasting', 'ev-items', 'ev-medicine'],
       confidence: 0.93,
     },
@@ -485,11 +260,11 @@ const healthAnalysisKo: ModelAnalysis = {
       deadline: null,
       requiredItems: ['안내문'],
       method: ['문서에 적힌 건강추진과 번호로 문의합니다.'],
-      doNotDo: ['건강 상태에 관한 판단은 AI가 아니라 의료기관에 물어보세요.'],
       evidenceIds: ['ev-contact'],
       confidence: 0.94,
     },
   ],
+  paymentOptions: [],
   warnings: [],
   officialContacts: [
     {
@@ -591,7 +366,6 @@ const healthAnalysisJa: ModelAnalysis = {
       title: '11月20日までに 予約する',
       description: 'お知らせに 書いて ある 番号に 電話して 予約して ください。',
       method: ['文書の 下に ある 健康推進課の 番号に 電話します。'],
-      doNotDo: ['予約しないで そのまま 行かないで ください。'],
     },
     {
       ...healthAnalysisKo.recipientActions[1],
@@ -602,14 +376,12 @@ const healthAnalysisJa: ModelAnalysis = {
         '前の日の 夜9時から 食べません。水は 飲めます。',
         '当日は 保険証と お知らせを 持って いきます。',
       ],
-      doNotDo: ['お薬を 自分の 判断で やめないで ください。先に 伝えます。'],
     },
     {
       ...healthAnalysisKo.recipientActions[2],
       title: '市役所に 確認する',
       description: '文書に 書いて ある 問い合わせ先を お見せします。',
       method: ['文書の 健康推進課の 番号に 問い合わせます。'],
-      doNotDo: ['体の 状態の 判断は AIでは なく 医療機関に 聞いて ください。'],
     },
   ],
   evidence: healthAnalysisKo.evidence.map((item) => ({
@@ -771,7 +543,6 @@ const welfareAnalysisKo: ModelAnalysis = {
       deadline: '2026-10-31',
       requiredItems: [],
       method: ['문서의 "신청 대상" 칸을 확인합니다.', '확실하지 않으면 주민센터에 물어봅니다.'],
-      doNotDo: ['대상인지 혼자 단정하지 마세요. 최종 판단은 주민센터가 합니다.'],
       evidenceIds: ['ev-target'],
       confidence: 0.9,
     },
@@ -782,7 +553,6 @@ const welfareAnalysisKo: ModelAnalysis = {
       deadline: '2026-10-31',
       requiredItems: ['신분증', '신청서', '가구원 확인이 가능한 서류'],
       method: ['신분증을 챙깁니다.', '주소지 주민센터에 방문해 신청서를 받습니다.'],
-      doNotDo: ['지원 금액을 미리 짐작하지 마세요. 심사 후에 정해집니다.'],
       evidenceIds: ['ev-deadline', 'ev-docs', 'ev-place'],
       confidence: 0.93,
     },
@@ -793,11 +563,11 @@ const welfareAnalysisKo: ModelAnalysis = {
       deadline: null,
       requiredItems: [],
       method: ['문서 아래쪽에 적힌 복지지원팀 번호로 전화합니다.'],
-      doNotDo: ['문자로 온 번호로 개인정보를 알려주지 마세요.'],
       evidenceIds: ['ev-contact'],
       confidence: 0.94,
     },
   ],
+  paymentOptions: [],
   warnings: [],
   officialContacts: [
     {
@@ -877,11 +647,35 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'tax_notice',
     documentLanguage: 'ko',
     country: 'KR',
-    title: '지방세 납부 안내문 (한국)',
-    description: '메인 시연 문서. 금액과 기한이 모두 적혀 있습니다.',
+    title: '지방세 납세고지서 (한국)',
+    description: '집으로 온 고지서. 금액과 기한, 낼 수 있는 방법이 적혀 있습니다.',
     icon: '🏛️',
-    page: taxPage,
-    analysisByLanguage: { ko: taxAnalysisKo },
+    page: krTaxPage,
+    analysisByLanguage: { ko: krTaxAnalysisKo, ja: krTaxAnalysisJa },
+  },
+  {
+    id: 'jp-gas-bill',
+    documentType: 'utility_bill',
+    documentLanguage: 'ja',
+    country: 'JP',
+    title: '가스요금 납부용지 (일본)',
+    description: '바코드가 있는 엽서. 편의점과 휴대폰 앱으로 낼 수 있습니다.',
+    icon: '🔥',
+    page: jpGasPage,
+    continuesTo: 'jp-payment-app',
+    analysisByLanguage: { ko: jpGasAnalysisKo, ja: jpGasAnalysisJa },
+  },
+  {
+    id: 'jp-payment-app',
+    documentType: 'utility_bill',
+    documentLanguage: 'ja',
+    country: 'JP',
+    title: '결제앱 화면 (일본)',
+    description: '바코드를 찍은 뒤 나온 화면. 종이가 아니라 화면도 문서입니다.',
+    icon: '📱',
+    page: jpAppPage,
+    surface: 'screen',
+    analysisByLanguage: { ko: jpAppAnalysisKo, ja: jpAppAnalysisJa },
   },
   {
     id: 'jp-health-checkup',
@@ -892,6 +686,7 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     description: '일본어 원문을 쉬운 한국어로 설명합니다.',
     icon: '🩺',
     page: healthPage,
+    hidden: true,
     analysisByLanguage: { ko: healthAnalysisKo, ja: healthAnalysisJa },
   },
   {
@@ -903,9 +698,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     description: '금액이 적혀 있지 않은 문서. 추측하지 않는 동작을 보여줍니다.',
     icon: '🤝',
     page: welfarePage,
+    hidden: true,
     analysisByLanguage: { ko: welfareAnalysisKo },
   },
 ];
+
+/** What the demo picker offers. */
+export const VISIBLE_DOCUMENT_FIXTURES: readonly DocumentFixture[] =
+  DOCUMENT_FIXTURES.filter((fixture) => !fixture.hidden);
 
 export const DEFAULT_FIXTURE_ID = 'kr-local-tax';
 
@@ -913,10 +713,19 @@ export function getFixture(id: string): DocumentFixture | undefined {
   return DOCUMENT_FIXTURES.find((fixture) => fixture.id === id);
 }
 
+/** The screen a fixture hands the reader on to, when there is one. */
+export function nextFixture(id: string): DocumentFixture | undefined {
+  const current = getFixture(id);
+  return current?.continuesTo ? getFixture(current.continuesTo) : undefined;
+}
+
 export function fixtureForDocumentType(
   documentType: DocumentTypeId,
 ): DocumentFixture | undefined {
-  return DOCUMENT_FIXTURES.find((fixture) => fixture.documentType === documentType);
+  return (
+    VISIBLE_DOCUMENT_FIXTURES.find((fixture) => fixture.documentType === documentType) ??
+    DOCUMENT_FIXTURES.find((fixture) => fixture.documentType === documentType)
+  );
 }
 
 /** Korean is the reference explanation; other languages fall back to it. */
