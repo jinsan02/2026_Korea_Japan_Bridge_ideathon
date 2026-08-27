@@ -604,7 +604,7 @@ const waterPracticePage: SyntheticDocumentPage = {
     },
     {
       id: 'deadline-value',
-      text: 'お支払期限 2026年7月15日',
+      text: 'お支払期限 2026年10月15日',
       x: 420,
       y: 390,
       width: 310,
@@ -612,7 +612,7 @@ const waterPracticePage: SyntheticDocumentPage = {
       style: 'fieldValueStrong',
     },
     ...fieldRow({ idPrefix: 'customer', label: 'お客さま番号', value: '●●●', y: 480 }),
-    ...fieldRow({ idPrefix: 'period', label: 'ご使用期間', value: '5月分〜6月分', y: 536 }),
+    ...fieldRow({ idPrefix: 'period', label: 'ご使用期間', value: '8月分〜9月分', y: 536 }),
     {
       id: 'howto-label',
       text: 'お支払い方法',
@@ -725,7 +725,7 @@ const waterPractice: PracticeScenario = {
       kind: 'important_date',
       options: [
         {
-          text: '2026년 7월 15일',
+          text: '2026년 10월 15일',
           correct: true,
           feedback: '맞습니다. "お支払期限" 줄에 적혀 있습니다.',
         },
@@ -743,7 +743,7 @@ const waterPractice: PracticeScenario = {
       hints: {
         location: '금액 바로 오른쪽을 보세요.',
         keyword: '"お支払期限"이라고 적힌 줄을 찾아보세요.',
-        answer: '"お支払期限 2026年7月15日"이라고 적혀 있습니다. 支払는 낸다, 期限은 기한이라는 뜻입니다.',
+        answer: '"お支払期限 2026年10月15日"이라고 적혀 있습니다. 支払는 낸다, 期限은 기한이라는 뜻입니다.',
         highlightBlockId: 'deadline-value',
       },
       explanation:

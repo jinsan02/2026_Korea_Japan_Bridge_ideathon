@@ -35,7 +35,7 @@ export default function ConsentScreen() {
     <AppShell
       screen="consent"
       backHref="/capture"
-      step={{ current: 2, total: 4 }}
+      step={{ current: 2, total: 3 }}
       showBadges={false}
       footer={
         <>

@@ -9,7 +9,10 @@
  * rather than asking anyone to trust the model.
  *
  * `?ids=` narrows the list to one action card's evidence; with no query it
- * shows everything the analysis was built on.
+ * shows everything the analysis was built on. `?back=` names the screen that
+ * sent us - the confirm screen can open this directly, and returning to the
+ * result screen from there would be returning to a screen the reader has
+ * never seen.
  */
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -21,12 +24,26 @@ import { RequireAnalysis } from '@/components/RequireAnalysis';
 import { ConfidenceNote } from '@/components/WarningList';
 import { useSession } from '@/lib/session/SessionProvider';
 
+/**
+ * Only our own screens, and only ones that make sense to return to.
+ * A path from the query string is untrusted input; it must never become an
+ * open redirect.
+ */
+const BACK_TARGETS = ['/result', '/confirm', '/solve'] as const;
+
+function safeBack(value: string | null): string {
+  return (BACK_TARGETS as readonly string[]).includes(value ?? '')
+    ? (value as string)
+    : '/result';
+}
+
 function EvidenceContent() {
   const { t, logEvent } = useSession();
   const params = useSearchParams();
   const [openId, setOpenId] = useState<string | null>(null);
 
   const filter = params.get('ids')?.split(',').filter(Boolean) ?? null;
+  const back = safeBack(params.get('back'));
 
   return (
     <RequireAnalysis screen="evidence">
@@ -39,7 +56,7 @@ function EvidenceContent() {
         return (
           <AppShell
             screen="evidence"
-            backHref="/result"
+            backHref={back}
             footer={
               <Link className="btn btn--primary" href="/contact">
                 <span aria-hidden="true">🏛️</span>

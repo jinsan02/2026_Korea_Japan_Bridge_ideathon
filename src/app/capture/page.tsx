@@ -93,7 +93,7 @@ export default function CaptureScreen() {
     <AppShell
       screen="capture"
       backHref="/"
-      step={{ current: 1, total: 4 }}
+      step={{ current: 1, total: 3 }}
       showBadges={false}
       footer={
         <button

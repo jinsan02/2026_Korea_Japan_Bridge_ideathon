@@ -92,6 +92,7 @@ export default function SolveScreen() {
           <AppShell
             screen="solve"
             backHref={index === 0 ? '/confirm' : undefined}
+            onBack={index === 0 ? undefined : () => setIndex((c) => c - 1)}
             step={{ current: index + 1, total: steps.length }}
             footer={
               <>

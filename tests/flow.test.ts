@@ -16,6 +16,7 @@ import { FixtureProvider } from '@/lib/providers/fixture';
 import {
   DEFAULT_FIXTURE_ID,
   DOCUMENT_FIXTURES,
+  VISIBLE_DOCUMENT_FIXTURES,
   fixtureAnalysis,
   getFixture,
 } from '@/lib/fixtures/documents';
@@ -232,5 +233,30 @@ describe('helpers', () => {
     const parsed = parseModelJson('{"text":"a } b","n":2}');
     expect(parsed.ok).toBe(true);
     if (parsed.ok) expect(parsed.value).toEqual({ text: 'a } b', n: 2 });
+  });
+});
+
+describe('demo dates', () => {
+  /**
+   * A demo bill that is months overdue shows "기한이 119일 지났습니다" on
+   * stage, which is a worse look than any model error. This test goes red
+   * when a fixture deadline has passed - that is the reminder to move the
+   * dates forward, not a flaky failure.
+   */
+  it('no visible demo document has a deadline in the past', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    for (const fixture of VISIBLE_DOCUMENT_FIXTURES) {
+      for (const analysis of Object.values(fixture.analysisByLanguage)) {
+        if (!analysis) continue;
+        for (const date of analysis.importantDates) {
+          if (date.kind !== 'deadline' && date.kind !== 'appointment') continue;
+          if (date.isoDate === null) continue;
+          expect(
+            `${fixture.id}/${date.id} ${date.isoDate}`,
+            `${fixture.id} shows a past deadline - move the demo dates forward`,
+          ).toBe(`${fixture.id}/${date.id} ${date.isoDate >= today ? date.isoDate : 'FUTURE'}`);
+        }
+      }
+    }
   });
 });

@@ -27,8 +27,17 @@ import { ViewControls } from './ViewControls';
 
 interface AppShellProps {
   children: ReactNode;
-  /** Route for the back button. Omit to hide it (start screen). */
+  /**
+   * Route for the back button. Omit only on the start screen; every other
+   * screen needs one, and a screen that goes back somewhere the user has not
+   * been is worse than one that goes back too far.
+   */
   backHref?: string;
+  /**
+   * Overrides where back goes - for a screen whose "back" is a step inside
+   * itself rather than another route.
+   */
+  onBack?: () => void;
   /** Screen name recorded with the back event. */
   screen: string;
   /** Sticky bottom area for the screen's primary action. */
@@ -48,6 +57,7 @@ export function AppShell({
   backHref,
   screen,
   footer,
+  onBack,
   showBadges = true,
   step,
   showLanguageToggle = true,
@@ -58,18 +68,27 @@ export function AppShell({
   const handleBack = () => {
     countBack();
     logEvent('back_pressed', { screen });
-    if (backHref) {
+    if (onBack) {
+      onBack();
+    } else if (backHref) {
       router.push(backHref);
     } else {
       router.back();
     }
   };
 
+  const goHome = () => {
+    logEvent('home_pressed', { screen });
+    router.push('/');
+  };
+
+  const showBack = Boolean(backHref ?? onBack);
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header__nav">
-          {backHref ? (
+          {showBack ? (
             <button
               type="button"
               className="btn btn--quiet btn--icon"
@@ -99,6 +118,19 @@ export function AppShell({
             <span className="app-header__step">
               {t.common.step(step.current, step.total)}
             </span>
+          ) : null}
+          {/* Always one tap out. A demo that can only be left one screen at a
+              time strands the presenter, and a lost user has no way back to
+              somewhere they recognise. */}
+          {showBack ? (
+            <button
+              type="button"
+              className="btn btn--quiet btn--icon"
+              onClick={goHome}
+            >
+              <span aria-hidden="true">⌂</span>
+              {t.common.home}
+            </button>
           ) : null}
         </div>
 

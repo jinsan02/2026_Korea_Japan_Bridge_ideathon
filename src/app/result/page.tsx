@@ -16,7 +16,8 @@
  * document, and the explanation of each rail is our own fixed copy.
  */
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
 import { RequireAnalysis } from '@/components/RequireAnalysis';
@@ -63,15 +64,52 @@ function Missing({ note, help }: { note: string; help: string }) {
   );
 }
 
-export default function ResultScreen() {
+/** Only our own screens; a path from the query string is untrusted input. */
+const BACK_TARGETS = ['/solve', '/confirm'] as const;
+
+function ResultContent() {
   const { t, logEvent, conditionDefinition } = useSession();
+  const params = useSearchParams();
   const [saved, setSaved] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
+  const scrolled = useRef(false);
+
+  const backHref = (BACK_TARGETS as readonly string[]).includes(
+    params.get('back') ?? '',
+  )
+    ? (params.get('back') as string)
+    : '/solve';
+  const focus = params.get('focus');
 
   useEffect(() => {
     logEvent('result_viewed', { screen: 'result' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * "낼 수 있는 방법" is one of the three doors on the confirm screen, so
+   * arriving from it must land on that section rather than at the top of a
+   * long page the reader has to scroll past first.
+   *
+   * A callback ref rather than an effect: the section lives inside
+   * RequireAnalysis, so on the first render there is nothing to scroll to and
+   * an effect keyed on the query would give up before the node ever existed.
+   */
+  const paymentRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (!node || focus !== 'payment' || scrolled.current) return;
+      scrolled.current = true;
+      // Two frames: the router resets scroll position of its own accord after
+      // the node mounts, so scrolling immediately gets undone.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          node.scrollIntoView({ block: 'start' });
+          node.focus({ preventScroll: true });
+        });
+      });
+    },
+    [focus],
+  );
 
   return (
     <RequireAnalysis screen="result">
@@ -119,7 +157,7 @@ export default function ResultScreen() {
         return (
           <AppShell
             screen="result"
-            backHref="/solve"
+            backHref={backHref}
             footer={
               conditionDefinition.features.learningLoop ? (
                 <Link className="btn btn--primary" href="/solve/complete">
@@ -291,8 +329,15 @@ export default function ResultScreen() {
 
               {/* 5. how it can be paid - document-stated rails only */}
               {analysis.amounts.length > 0 ? (
-                <section className="stack stack--tight">
-                  <h2 className="section-heading">{t.payment.title}</h2>
+                <section
+                  className="stack stack--tight"
+                  ref={paymentRef}
+                  tabIndex={-1}
+                  aria-labelledby="payment-heading"
+                >
+                  <h2 className="section-heading" id="payment-heading">
+                    {t.payment.title}
+                  </h2>
                   <p className="text-small">{t.payment.subtitle}</p>
                   {analysis.paymentOptions.length === 0 ? (
                     <Missing note={t.payment.none} help={t.payment.noneHelp} />
@@ -369,5 +414,14 @@ export default function ResultScreen() {
         );
       }}
     </RequireAnalysis>
+  );
+}
+
+export default function ResultScreen() {
+  // useSearchParams needs a Suspense boundary in the app router.
+  return (
+    <Suspense fallback={null}>
+      <ResultContent />
+    </Suspense>
   );
 }

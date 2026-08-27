@@ -64,7 +64,7 @@ export function buildEntryChoices(
       icon: '💳',
       title: copy.payment.title,
       body: copy.payment.body(analysis.paymentOptions.length),
-      href: '/result?focus=payment',
+      href: '/result?focus=payment&back=/confirm',
     });
   }
 
@@ -76,7 +76,7 @@ export function buildEntryChoices(
       icon: surface === 'screen' ? '👆' : '🔍',
       title: where.title,
       body: where.body,
-      href: `/evidence?ids=${pointable.join(',')}`,
+      href: `/evidence?ids=${pointable.join(',')}&back=/confirm`,
     });
   }
 
@@ -88,7 +88,7 @@ export function buildEntryChoices(
       icon: '📌',
       title: copy.facts.title,
       body: copy.facts.body,
-      href: '/result',
+      href: '/result?back=/confirm',
     });
   }
 

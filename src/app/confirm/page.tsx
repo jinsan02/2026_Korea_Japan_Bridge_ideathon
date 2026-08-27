@@ -70,7 +70,10 @@ export default function ConfirmScreen() {
         const choices = buildEntryChoices(analysis, surface, t);
 
         return (
-          <AppShell screen="confirm" backHref="/capture" step={{ current: 4, total: 4 }}>
+          // No step counter: this is where the intake sequence arrives, and
+          // "4단계 중 4단계" immediately followed by the guided flow's
+          // "6단계 중 1단계" reads as two unrelated progress bars.
+          <AppShell screen="confirm" backHref="/capture">
             {choosing ? (
               <div className="stack stack--loose">
                 <div className="stack stack--tight">

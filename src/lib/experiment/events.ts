@@ -43,6 +43,7 @@ export const EVENT_TYPES = [
   'deadline_saved',
   'speech_played',
   'back_pressed',
+  'home_pressed',
 
   // step 2 - the manual
   'tutorial_saved',

@@ -70,7 +70,7 @@ export const jpGasPage: SyntheticDocumentPage = {
     },
     {
       id: 'subtitle',
-      text: '2026年4月分のガス料金です。期限までにお支払いください。',
+      text: '2026年9月分のガス料金です。期限までにお支払いください。',
       x: 60,
       y: 230,
       width: 680,
@@ -97,7 +97,7 @@ export const jpGasPage: SyntheticDocumentPage = {
     },
     {
       id: 'deadline-value',
-      text: 'お支払期限 2026年4月30日',
+      text: 'お支払期限 2026年9月18日',
       x: 400,
       y: 390,
       width: 310,
@@ -110,7 +110,7 @@ export const jpGasPage: SyntheticDocumentPage = {
       value: '0000-0000-0000',
       y: 480,
     }),
-    ...fieldRow({ idPrefix: 'period', label: 'ご使用期間', value: '3月10日〜4月9日', y: 536 }),
+    ...fieldRow({ idPrefix: 'period', label: 'ご使用期間', value: '8月10日〜9月9日', y: 536 }),
     {
       id: 'howto-label',
       text: 'お支払い方法',
@@ -202,13 +202,13 @@ export const jpGasAnalysisKo: ModelAnalysis = {
   documentTypeLabel: '가스요금 납부용지 (일본)',
   issuer: '○○ガス株式会社',
   title: 'ガス料金 払込票',
-  summary: '가스요금 8,181엔을 4월 30일까지 내라는 납부용지입니다.',
+  summary: '가스요금 8,181엔을 9월 18일까지 내라는 납부용지입니다.',
   importantDates: [
     {
       id: 'd-due',
       label: '납부기한',
-      isoDate: '2026-04-30',
-      rawText: 'お支払期限 2026年4月30日',
+      isoDate: '2026-09-18',
+      rawText: 'お支払期限 2026年9月18日',
       kind: 'deadline',
       evidenceIds: ['ev-deadline'],
       confidence: 0.96,
@@ -230,7 +230,7 @@ export const jpGasAnalysisKo: ModelAnalysis = {
       id: 'act-one-route',
       title: '납부 방법을 하나만 고르기',
       description: '편의점에서도 내고 앱에서도 내면 두 번 낼 수 있습니다.',
-      deadline: '2026-04-30',
+      deadline: '2026-09-18',
       requiredItems: ['납부용지'],
       method: [
         '편의점은 용지를 통째로 계산대에 냅니다.',
@@ -358,7 +358,7 @@ export const jpGasAnalysisKo: ModelAnalysis = {
     {
       id: 'ev-deadline',
       originalText: quoteOf(jpGasPage, 'deadline-value'),
-      translatedText: '납부기한 2026년 4월 30일',
+      translatedText: '납부기한 2026년 9월 18일',
       explanation: '이 날이 지나면 연체이자가 붙기 시작합니다.',
       page: 1,
       region: bboxOf(jpGasPage, 'deadline-value'),
@@ -469,7 +469,7 @@ export const jpAppPage: SyntheticDocumentPage = {
     },
     {
       id: 'period',
-      text: '2026年4月分',
+      text: '2026年9月分',
       x: 68,
       y: 276,
       width: 480,
@@ -487,7 +487,7 @@ export const jpAppPage: SyntheticDocumentPage = {
     },
     {
       id: 'due',
-      text: 'お支払期限 2026年4月30日',
+      text: 'お支払期限 2026年9月18日',
       x: 68,
       y: 452,
       width: 480,
@@ -572,8 +572,8 @@ export const jpAppAnalysisKo: ModelAnalysis = {
     {
       id: 'd-due',
       label: '납부기한',
-      isoDate: '2026-04-30',
-      rawText: 'お支払期限 2026年4月30日',
+      isoDate: '2026-09-18',
+      rawText: 'お支払期限 2026年9月18日',
       kind: 'deadline',
       evidenceIds: ['ev-due'],
       confidence: 0.95,
@@ -604,7 +604,7 @@ export const jpAppAnalysisKo: ModelAnalysis = {
       id: 'act-timing',
       title: '「지금 내기」와 「예약」의 차이 알기',
       description: '예약은 아직 낸 것이 아닙니다. 정한 날에 자동으로 나갑니다.',
-      deadline: '2026-04-30',
+      deadline: '2026-09-18',
       requiredItems: [],
       method: [
         '위쪽 파란 버튼은 누르는 순간 나갑니다.',
@@ -672,7 +672,7 @@ export const jpAppAnalysisKo: ModelAnalysis = {
     {
       id: 'ev-due',
       originalText: quoteOf(jpAppPage, 'due'),
-      translatedText: '납부기한 2026년 4월 30일',
+      translatedText: '납부기한 2026년 9월 18일',
       explanation: '언제까지 내야 하는지입니다.',
       page: 1,
       region: bboxOf(jpAppPage, 'due'),

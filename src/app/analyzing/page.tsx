@@ -182,7 +182,7 @@ export default function AnalyzingScreen() {
   const activeIndex = PHASES.indexOf(phase);
 
   return (
-    <AppShell screen="analyzing" showBadges={false} step={{ current: 3, total: 4 }}>
+    <AppShell screen="analyzing" showBadges={false} step={{ current: 3, total: 3 }}>
       <div className="stack stack--loose">
         <div className="stack stack--tight">
           <h1 className="screen-title">{t.analyzing.title}</h1>

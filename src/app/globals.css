@@ -1020,3 +1020,9 @@ table.data th {
     font-size: 0.98rem;
   }
 }
+
+/* A section scrolled to from a ?focus= link must clear the sticky header,
+   or the heading the link promised lands underneath it. */
+[tabindex='-1'][aria-labelledby] {
+  scroll-margin-top: 8.5rem;
+}

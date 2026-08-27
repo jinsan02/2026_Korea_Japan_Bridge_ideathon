@@ -109,7 +109,7 @@ export const krTaxAnalysisJa: ModelAnalysis = localise(krTaxAnalysisKo, {
 export const jpGasAnalysisJa: ModelAnalysis = localise(jpGasAnalysisKo, {
   language: 'ja',
   documentTypeLabel: 'ガス料金の 払込票',
-  summary: 'ガス料金 8,181円を 4月30日までに 払う 用紙です。',
+  summary: 'ガス料金 8,181円を 9月18日までに 払う 用紙です。',
   dates: { 'd-due': 'お支払期限' },
   amounts: { 'am-due': 'ご請求金額' },
   actions: {

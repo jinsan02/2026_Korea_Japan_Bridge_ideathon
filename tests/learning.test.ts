@@ -91,8 +91,8 @@ describe('practice scenarios', () => {
 
     expect(gasText).toContain('8,181円');
     expect(waterText).not.toContain('8,181円');
-    expect(gasText).toContain('2026年4月30日');
-    expect(waterText).not.toContain('2026年4月30日');
+    expect(gasText).toContain('2026年9月18日');
+    expect(waterText).not.toContain('2026年9月18日');
   });
 
   it('practice documents carry no un-masked personal-data placeholder', () => {
