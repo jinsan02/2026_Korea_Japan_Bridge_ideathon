@@ -44,6 +44,25 @@ import { NEXT_LEVEL } from '@/lib/learning/types';
 import { buildUtterance } from '@/lib/speech';
 import { useSession } from '@/lib/session/SessionProvider';
 
+const JA_SCENARIO_LABELS: Record<string, { title: string; topic: string }> = {
+  'practice-kr-tax-auto': {
+    title: '自動車税の お知らせで 練習',
+    topic: '地方税の 書類で 期限と 払い方を 探します',
+  },
+  'practice-jp-health': {
+    title: '健康診断の お知らせで 練習',
+    topic: '予約期限と 準備する 物を 探します',
+  },
+  'practice-kr-welfare': {
+    title: '福祉の お知らせで 練習',
+    topic: '申請期限と 準備する 物を 探します',
+  },
+};
+
+function scenarioLabel(scenario: PracticeScenario, language: string) {
+  return language === 'ja' ? JA_SCENARIO_LABELS[scenario.id] : undefined;
+}
+
 /** Hint 1 is pre-revealed at the most supported level. */
 function initialHintStep(level: AssistanceLevel): number {
   return level === 'guided' ? 1 : 0;
@@ -54,7 +73,7 @@ function hintsAvailable(level: AssistanceLevel): boolean {
 }
 
 function PracticeChooser() {
-  const { t } = useSession();
+  const { t, language } = useSession();
   const [learned, setLearned] = useState<string[]>([]);
 
   useEffect(() => {
@@ -70,24 +89,27 @@ function PracticeChooser() {
         </div>
 
         <div className="stack">
-          {PRACTICE_SCENARIOS.map((scenario) => (
-            <Link
-              key={scenario.id}
-              className="action-card"
-              href={`/practice?scenario=${encodeURIComponent(scenario.id)}`}
-            >
-              <span className="row">
-                <span className="action-card__index" aria-hidden="true">
-                  ✏️
+          {PRACTICE_SCENARIOS.map((scenario) => {
+            const label = scenarioLabel(scenario, language);
+            return (
+              <Link
+                key={scenario.id}
+                className="action-card"
+                href={`/practice?scenario=${encodeURIComponent(scenario.id)}`}
+              >
+                <span className="row">
+                  <span className="action-card__index" aria-hidden="true">
+                    ✏️
+                  </span>
+                  <span className="action-card__label">{label?.title ?? scenario.title}</span>
                 </span>
-                <span className="action-card__label">{scenario.title}</span>
-              </span>
-              <span className="action-card__description">
-                {scenario.topic}
-                {learned.includes(scenario.documentType) ? ' · ✅' : ''}
-              </span>
-            </Link>
-          ))}
+                <span className="action-card__description">
+                  {label?.topic ?? scenario.topic}
+                  {learned.includes(scenario.documentType) ? ' · ✅' : ''}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </AppShell>
@@ -96,7 +118,8 @@ function PracticeChooser() {
 
 function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
   const router = useRouter();
-  const { t, logEvent, conditionDefinition } = useSession();
+  const { t, language, logEvent, conditionDefinition } = useSession();
+  const displayLabel = scenarioLabel(scenario, language);
 
   const [level, setLevel] = useState<AssistanceLevel>('guided');
   const [phase, setPhase] = useState<'intro' | 'quiz'>('intro');
@@ -258,7 +281,7 @@ function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
       >
         <div className="stack stack--loose">
           <div className="stack stack--tight">
-            <h1 className="screen-title">{scenario.title}</h1>
+            <h1 className="screen-title">{displayLabel?.title ?? scenario.title}</h1>
             <p className="screen-subtitle">{t.practice.yourTurnBody}</p>
           </div>
 
@@ -283,7 +306,7 @@ function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
           </section>
 
           <div className="doc-scroll">
-            <DocumentPageView page={page} label={scenario.title} mask />
+            <DocumentPageView page={page} label={displayLabel?.title ?? scenario.title} mask />
           </div>
         </div>
       </AppShell>
@@ -418,7 +441,7 @@ function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
           <DocumentPageView
             page={page}
             highlight={highlight}
-            label={scenario.title}
+            label={displayLabel?.title ?? scenario.title}
             mask
           />
         </div>

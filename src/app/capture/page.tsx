@@ -20,9 +20,24 @@ const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 6_000_000;
 const MAX_EDGE_PX = 1_600;
 
+const JA_FIXTURE_LABELS: Record<string, { title: string; description: string }> = {
+  'kr-local-tax': {
+    title: '地方税 納付の お知らせ（韓国）',
+    description: '金額と 期限が 書かれた メインの デモ書類です。',
+  },
+  'jp-health-checkup': {
+    title: '健康診断の お知らせ（日本）',
+    description: '日本語の 書類を やさしい 言葉で 説明します。',
+  },
+  'kr-welfare': {
+    title: '福祉申請の お知らせ（韓国）',
+    description: '金額を 推測しない 動きを 見せる 書類です。',
+  },
+};
+
 export default function CaptureScreen() {
   const router = useRouter();
-  const { t, fixtureId, setFixtureId, setImage, image, logEvent } = useSession();
+  const { t, language, fixtureId, setFixtureId, setImage, image, logEvent } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const cameraInput = useRef<HTMLInputElement>(null);
@@ -166,32 +181,44 @@ export default function CaptureScreen() {
           </div>
 
           <div className="stack stack--tight">
-            {DOCUMENT_FIXTURES.map((fixture) => (
-              <label
-                key={fixture.id}
-                className="radio-row"
-                data-selected={!image && fixture.id === selected?.id}
-              >
-                <input
-                  type="radio"
-                  name="fixture"
-                  value={fixture.id}
-                  checked={!image && fixture.id === selected?.id}
-                  onChange={() => useFixture(fixture.id)}
-                />
-                <span>
-                  <span aria-hidden="true">{fixture.icon} </span>
-                  <strong>{fixture.title}</strong>
-                  <br />
-                  <span className="text-small">{fixture.description}</span>
-                </span>
-              </label>
-            ))}
+            {DOCUMENT_FIXTURES.map((fixture) => {
+              const label = language === 'ja' ? JA_FIXTURE_LABELS[fixture.id] : undefined;
+              return (
+                <label
+                  key={fixture.id}
+                  className="radio-row"
+                  data-selected={!image && fixture.id === selected?.id}
+                >
+                  <input
+                    type="radio"
+                    name="fixture"
+                    value={fixture.id}
+                    checked={!image && fixture.id === selected?.id}
+                    onChange={() => useFixture(fixture.id)}
+                  />
+                  <span>
+                    <span aria-hidden="true">{fixture.icon} </span>
+                    <strong>{label?.title ?? fixture.title}</strong>
+                    <br />
+                    <span className="text-small">
+                      {label?.description ?? fixture.description}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
           </div>
 
           {!image && selected ? (
             <div className="doc-scroll">
-              <DocumentPageView page={selected.page} label={selected.title} />
+              <DocumentPageView
+                page={selected.page}
+                label={
+                  language === 'ja'
+                    ? (JA_FIXTURE_LABELS[selected.id]?.title ?? selected.title)
+                    : selected.title
+                }
+              />
             </div>
           ) : null}
         </div>

@@ -349,7 +349,7 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 
 ## 9. 접근성
 
-본문 20px · 행간 1.7 · 터치 영역 최소 56px · 본문 대비 14.9:1 ·
+본문 20px · 행간 1.7 · 터치 영역 최소 56px · 검정 글자/로즈 화이트 대비 약 20.1:1 ·
 색상만으로 상태 구분하지 않음(아이콘+글자 병기) · 뒤로가기 위치 고정 ·
 한국어·일본어 전환 · 글자 크기 3단계 · 음성 읽기 · `prefers-reduced-motion` 존중 ·
 확대 제한 없음(`maximum-scale=5`).
@@ -362,3 +362,5 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 - [`docs/FEATURE_STATUS.md`](docs/FEATURE_STATUS.md) — 구현 / 연출 / 미구현 구분표
 - [`docs/MODEL_COMPARISON.md`](docs/MODEL_COMPARISON.md) — 모델 비교 결과 기록 양식
 - [`docs/HANDOFF.md`](docs/HANDOFF.md) — 다음 작업자 인수인계
+- [`docs/design/UIUX_REFERENCE_AND_PALETTE.md`](docs/design/UIUX_REFERENCE_AND_PALETTE.md) — Rose White 중심 UI 색 체계와 사용 규칙
+- [`docs/research/JAPAN_RESIDENT_TAX_NOTICE_MANUAL_KO_JA.md`](docs/research/JAPAN_RESIDENT_TAX_NOTICE_MANUAL_KO_JA.md) — 일본 주민세 특별징수 통지서 판별·한일 사용 매뉴얼

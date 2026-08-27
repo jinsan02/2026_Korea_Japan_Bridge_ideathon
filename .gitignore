@@ -13,5 +13,8 @@ next-env.d.ts
 # De-identified experiment event log written at runtime
 .data/
 
+# Downloaded/rendered research scratch files
+tmp/
+
 .DS_Store
 Thumbs.db

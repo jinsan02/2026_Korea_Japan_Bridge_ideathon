@@ -5,9 +5,16 @@
 The visual system should communicate the product loop before it communicates
 the model: **solve together → practise → solve independently**. The interface
 uses a calm public-service structure, senior-sized controls, and a warm pink
-identity without using pale pink for important text or primary actions.
+identity. Rose White is the dominant surface, every reader-facing word is
+black, and pale pink appears only when the interface asks for attention or an
+action.
 
 Concept image: [ai-door-light-pink-ui-concept.png](./ai-door-light-pink-ui-concept.png)
+
+Rendered workflows:
+
+- [Korean workflow](./ai-door-workflow-ko.jpg)
+- [Japanese workflow](./ai-door-workflow-ja.jpg)
 
 ## Reference review
 
@@ -24,21 +31,20 @@ sequence and learning-loop hierarchy remain primary.
 
 | Token | Name | Hex | Use |
 |---|---|---:|---|
-| Team point | Light Pink | `#F7C6D9` | decorative accents, illustration, non-text emphasis |
-| Background | Rose White | `#FFF8FB` | app background |
-| Selected surface | Blush Mist | `#FCE7F0` | active cards and learning journey |
-| Primary | Deep Rose | `#9E2F61` | primary button, active border, focus system |
-| Primary strong | Mulberry Rose | `#7A1F49` | headings and hover state |
-| Text | Ink | `#241C21` | body and heading text |
-| Muted text | Warm Slate | `#5F4A54` | secondary copy |
-| Surface | White | `#FFFFFF` | cards and document surfaces |
+| Main surface | Rose White | `#FFF8FB` | app, header, footer, card and document background |
+| Text | Black | `#000000` | every heading, body label, caption and button label |
+| Button | Light Pink | `#F7C6D9` | primary action and high-attention action card only |
+| Pressed/highlight | Blush Mist | `#FCE7F0` | hover, pressed, selected and learning emphasis only |
+| Structural accent | Deep Rose | `#9E2F61` | borders, focus ring, connectors and icons; never text |
+| Strong structural accent | Mulberry Rose | `#7A1F49` | optional icon or border contrast; never text |
 
-Contrast checks on white:
+Contrast checks:
 
-- Deep Rose `#9E2F61`: approximately `6.92:1`
-- Mulberry Rose `#7A1F49`: approximately `9.91:1`
-- Ink `#241C21`: approximately `16.63:1`
-- Light Pink `#F7C6D9`: approximately `1.50:1`, so it must not carry text or essential boundaries by itself
+- Black `#000000` on Rose White `#FFF8FB`: approximately `20.1:1`
+- Black `#000000` on Light Pink `#F7C6D9`: approximately `15.0:1`
+- Black `#000000` on Blush Mist `#FCE7F0`: approximately `17.7:1`
+- Light Pink and Blush Mist never carry essential meaning without a word,
+  border, icon, or selected-state label.
 
 ## Screen hierarchy
 
@@ -68,6 +74,9 @@ Contrast checks on white:
 
 - Body copy remains 20px and the smallest copy remains 17px.
 - All interactive controls remain at least 56px high.
+- All reader-facing text is black, including links and primary button labels.
+- Rose White is the default surface; Light Pink and Blush Mist are limited to
+  actions, hover/pressed states, selections, and short emphasis areas.
 - Pink never communicates state by itself; use icon and text together.
 - No gradients, glassmorphism, dense analytics dashboards, or hidden navigation.
 - Preserve all existing evidence, privacy, fixture disclosure, and learning-loop tests.
