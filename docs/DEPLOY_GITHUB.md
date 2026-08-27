@@ -1,6 +1,7 @@
 # GitHub → 웹 URL 배포
 
-코드는 이미 GitHub `main` 에 올라가 있습니다.
+코드는 이미 GitHub `main` 에 올라가 있습니다. 배포 경로는 두 가지입니다 —
+**저장소 연결**(§2) 또는 **로컬에서 바로**(§2-B). 둘 다 Vercel 이고, 결과는 같습니다.
 남은 것은 **호스팅 연결과 키 등록**이고, 둘 다 본인 계정으로 하셔야 합니다.
 
 저장소: `https://github.com/jinsan02/2026_Korea_Japan_Bridge_ideathon`
@@ -99,6 +100,79 @@ GitHub Pages 는 정적 파일만 서빙하므로 이 셋이 전부 죽습니다
 - 유료 플랜이면 그대로 동작합니다.
 - 무료 플랜이면 **`AI_PROVIDER=fixture` 로 두고 예시 문서로 시연**하세요.
   전체 흐름이 그대로 돌아가고, 오히려 발표 중 실패 위험이 없습니다.
+
+---
+
+## 2-B. GitHub 없이 로컬에서 바로 배포 (더 빠름)
+
+저장소 연결 없이 **이 폴더를 그대로** 올릴 수 있습니다. Vercel CLI 를 쓰며,
+GitHub 를 거치지 않습니다.
+
+```bash
+cd C:/KJ_Bridge_Ideathon/AI_Door_Web_MVP
+npx vercel login
+```
+
+이메일 또는 GitHub 로 로그인합니다 (브라우저가 열립니다).
+
+```bash
+npx vercel
+```
+
+질문 4개가 나옵니다. **전부 기본값(엔터)** 으로 두면 됩니다 —
+프로젝트 루트가 Next.js 앱이라 따로 지정할 것이 없습니다.
+
+- Set up and deploy? → **Y**
+- Which scope? → 본인 계정
+- Link to existing project? → **N**
+- Project name / directory / settings → 엔터
+
+여기까지 하면 **미리보기 URL** 이 나옵니다.
+
+### 환경변수 등록
+
+```bash
+npx vercel env add OPENAI_API_KEY production
+npx vercel env add AI_PROVIDER production
+npx vercel env add OPENAI_MODEL production
+npx vercel env add OPENAI_FALLBACK_MODEL production
+npx vercel env add ADMIN_CODE production
+npx vercel env add ANALYZE_RATE_LIMIT_PER_MINUTE production
+```
+
+각 명령이 값을 물어보면 그때 입력합니다. **키는 이 터미널에만 입력하고
+파일에 쓰지 마세요.** 값은 § 2-2 표와 같습니다.
+
+### 진짜 URL 만들기
+
+```bash
+npx vercel --prod
+```
+
+`https://<프로젝트명>.vercel.app` 이 나옵니다. 이게 시연에 쓸 주소입니다.
+
+### 이후 수정했을 때
+
+```bash
+npx vercel --prod
+```
+
+한 줄이면 다시 올라갑니다. GitHub 푸시가 필요 없습니다.
+
+### 어느 쪽을 쓸까
+
+| | GitHub 연결 (§2) | 로컬 CLI (§2-B) |
+|---|---|---|
+| 처음 설정 | 웹 화면에서 클릭 | 터미널 명령 몇 줄 |
+| 배포 | `git push` 하면 자동 | `npx vercel --prod` 직접 |
+| 협업 | 팀원 푸시도 자동 배포 | 각자 로그인 필요 |
+| 발표 직전 급수정 | 커밋·푸시·대기 | **바로 올라감** |
+
+혼자 시연하실 거면 **§2-B 가 빠릅니다.** 코드는 이미 GitHub 에도 올라가 있으니
+나중에 §2 로 바꿔도 됩니다.
+
+> **참고:** GitHub Pages, Netlify 의 정적 배포, S3 같은 정적 호스팅은 안 됩니다.
+> §0 에 적은 대로 서버에서 도는 부분이 세 군데 있습니다.
 
 ---
 
