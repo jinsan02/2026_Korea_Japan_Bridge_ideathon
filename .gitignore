@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local environment files - never commit real API keys
+.env
+.env.local
+.env.*.local
+
+# De-identified experiment event log written at runtime
+.data/
+
+.DS_Store
+Thumbs.db

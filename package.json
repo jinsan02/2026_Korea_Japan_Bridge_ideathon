@@ -1,0 +1,35 @@
+{
+  "name": "ai-door-web-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Door - promptless document assistant MVP for the Korea-Japan inclusive AI ideathon",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "next": "^15.5.24",
+    "openai": "^4.104.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "server-only": "0.0.1",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.7",
+    "@types/react": "19.0.7",
+    "@types/react-dom": "19.0.3",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
