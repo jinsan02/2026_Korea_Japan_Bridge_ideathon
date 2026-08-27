@@ -13,6 +13,7 @@ import {
   primaryDate,
 } from '@/lib/analysis/schema';
 import { FixtureProvider } from '@/lib/providers/fixture';
+import { analyzeDocument } from '@/lib/providers';
 import {
   DEFAULT_FIXTURE_ID,
   DOCUMENT_FIXTURES,
@@ -257,6 +258,32 @@ describe('demo dates', () => {
           ).toBe(`${fixture.id}/${date.id} ${date.isoDate >= today ? date.isoDate : 'FUTURE'}`);
         }
       }
+    }
+  });
+});
+
+describe('deployment configuration', () => {
+  /**
+   * The production default turns off client provider override, so a deployed
+   * instance with AI_PROVIDER=openai would otherwise send demo-document
+   * clicks - which carry no image - down the OpenAI path and fail every one.
+   */
+  it('a fixture request stays a fixture request whatever the server prefers', async () => {
+    const outcome = await analyzeDocument('fixture', {
+      fixtureId: DEFAULT_FIXTURE_ID,
+      language: 'ko',
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.meta.provider).toBe('fixture');
+  });
+
+  it('every visible fixture resolves without a network call', async () => {
+    for (const fixture of VISIBLE_DOCUMENT_FIXTURES) {
+      const outcome = await analyzeDocument('fixture', {
+        fixtureId: fixture.id,
+        language: 'ko',
+      });
+      expect(outcome.ok, `${fixture.id} failed`).toBe(true);
     }
   });
 });

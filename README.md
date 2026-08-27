@@ -466,6 +466,7 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 - [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — 발표 시연 순서, 오류 대응 시나리오, 촬영 체크리스트
 - [`docs/FEATURE_STATUS.md`](docs/FEATURE_STATUS.md) — 구현 / 연출 / 미구현 구분표
 - [`docs/MODEL_COMPARISON.md`](docs/MODEL_COMPARISON.md) — 모델 비교 결과 기록 양식 (**아직 빈 양식**)
+- [`docs/DEPLOY_CHECKLIST.md`](docs/DEPLOY_CHECKLIST.md) — 배포 전 점검, 미리 잡아 둔 함정, 확인 못 한 것
 - [`docs/PROMPT_TUNING.md`](docs/PROMPT_TUNING.md) — 프롬프트 조정 기록
 - [`docs/design/UIUX_REFERENCE_AND_PALETTE.md`](docs/design/UIUX_REFERENCE_AND_PALETTE.md) — Rose White 중심 UI 색 체계와 사용 규칙
 

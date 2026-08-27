@@ -9,7 +9,15 @@
    - motion respects prefers-reduced-motion
    =========================================================================== */
 
+/**
+ * This design is light on purpose: the documents are pictures of paper, and
+ * the palette is fixed brand colour at 20:1 contrast. Declaring it stops a
+ * phone in dark mode from auto-inverting form controls and scrollbars while
+ * everything around them stays light - which reads as a broken page rather
+ * than a dark theme.
+ */
 :root {
+  color-scheme: light;
   /* Surfaces */
   --bg: #fff8fb;
   --surface: #fff8fb;

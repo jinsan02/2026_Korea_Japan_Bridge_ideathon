@@ -35,13 +35,7 @@ export interface PrepareOptions {
 const DEFAULT_MAX_EDGE = 1_600;
 const DEFAULT_QUALITY = 0.85;
 
-function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
-  // createImageBitmap honours EXIF orientation with imageOrientation: 'from-image'.
-  if (typeof createImageBitmap === 'function') {
-    return createImageBitmap(file, { imageOrientation: 'from-image' });
-  }
-
-  // Safari fallback: browsers without the option still auto-orient <img>.
+function decodeViaImageElement(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const image = new Image();
@@ -55,6 +49,22 @@ function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
     };
     image.src = url;
   });
+}
+
+async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
+  // createImageBitmap honours EXIF orientation with imageOrientation:
+  // 'from-image'. Safari shipped the function years before the option, and
+  // rejects rather than ignoring it - so a failure here is a browser that
+  // needs the <img> path, not a broken photo.
+  if (typeof createImageBitmap === 'function') {
+    try {
+      return await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch {
+      // Fall through to the element path, which auto-orients anyway.
+    }
+  }
+
+  return decodeViaImageElement(file);
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {

@@ -79,7 +79,14 @@ export const serverConfig = {
   },
 
   upload: {
-    maxBytes: int('MAX_UPLOAD_BYTES', 6_000_000),
+    /**
+     * Decoded image bytes. Base64 inflates by about a third on the wire, and
+     * a serverless request body is commonly capped near 4.5MB - a 6MB image
+     * arrived as ~8MB of JSON and was rejected by the platform before this
+     * handler ran, so the reader got an opaque 413 instead of our message.
+     * The client already downscales to 1600px, well under this.
+     */
+    maxBytes: int('MAX_UPLOAD_BYTES', 3_000_000),
     allowedTypes: list('ALLOWED_UPLOAD_TYPES', [
       'image/jpeg',
       'image/png',

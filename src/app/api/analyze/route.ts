@@ -21,6 +21,13 @@ import {
 import { checkRate, clientKey } from '@/lib/util/rate-limit';
 
 export const runtime = 'nodejs';
+/**
+ * A vision model on a photographed document routinely takes 20-40 seconds.
+ * Serverless platforms default far below that and kill the request mid-call,
+ * which reaches the reader as a generic failure. Raising it needs a plan that
+ * allows long functions; on one that does not, use the local or fixture mode.
+ */
+export const maxDuration = 60;
 /** Never cached: every request is a different document. */
 export const dynamic = 'force-dynamic';
 
@@ -110,7 +117,20 @@ export async function POST(request: Request) {
     }
   }
 
-  const requested = resolveRequestedProvider(input.provider);
+  /**
+   * Picking a prepared demo document is not the client overriding the
+   * provider - there is no image to analyse, so no provider but the fixture
+   * one can serve it.
+   *
+   * Without this, a deployment with AI_PROVIDER=openai and client override
+   * off (the production default) sends every demo-document click down the
+   * OpenAI path with no image, which fails 'unsupported_type' and puts a
+   * failure screen in front of the presenter on every single demo.
+   */
+  const requested =
+    input.fixtureId && !input.imageBase64
+      ? 'fixture'
+      : resolveRequestedProvider(input.provider);
   const documentInput = {
     imageBase64: input.imageBase64,
     mimeType: input.mimeType,
