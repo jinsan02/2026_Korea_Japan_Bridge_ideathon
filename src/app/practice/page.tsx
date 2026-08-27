@@ -26,8 +26,8 @@ import { SpeakButton } from '@/components/SpeakButton';
 import {
   PRACTICE_PAGES,
   PRACTICE_SCENARIOS,
-  getPracticeScenario,
 } from '@/lib/fixtures/practice';
+import { practiceById } from '@/lib/fixtures/learning-content';
 import { blockToBBox, findBlock } from '@/lib/fixtures/document-page';
 import {
   assistanceLevelFor,
@@ -453,7 +453,8 @@ function PracticeSession({ scenario }: { scenario: PracticeScenario }) {
 function PracticeContent() {
   const params = useSearchParams();
   const scenarioId = params.get('scenario');
-  const scenario = scenarioId ? getPracticeScenario(scenarioId) : undefined;
+  const { language } = useSession();
+  const scenario = scenarioId ? practiceById(scenarioId, language) : undefined;
   return scenario ? <PracticeSession scenario={scenario} /> : <PracticeChooser />;
 }
 

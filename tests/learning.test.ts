@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 import { PRACTICE_SCENARIOS, PRACTICE_PAGES } from '@/lib/fixtures/practice';
 import { DOCUMENT_TUTORIALS, getTutorial } from '@/lib/fixtures/tutorials';
-import { DOCUMENT_FIXTURES } from '@/lib/fixtures/documents';
+import { DOCUMENT_FIXTURES, VISIBLE_DOCUMENT_FIXTURES } from '@/lib/fixtures/documents';
+import { practiceFor, tutorialFor } from '@/lib/fixtures/learning-content';
 import { findBlock } from '@/lib/fixtures/document-page';
 import {
   hintReduction,
@@ -317,6 +318,51 @@ describe('synthetic page layout', () => {
           page.height,
         );
       }
+    }
+  });
+});
+
+describe('japanese learning content', () => {
+  /**
+   * The Korean-only fallback is silent by design, which is how the capture
+   * screen's Japanese labels went stale without anyone noticing. These pin
+   * the two tracks the demo actually shows.
+   */
+  it('both demo tracks have a Japanese manual and practice sheet', () => {
+    for (const documentType of ['tax_notice', 'utility_bill'] as const) {
+      const manual = tutorialFor(documentType, 'ja');
+      expect(manual?.language, `${documentType} manual`).toBe('ja');
+
+      const sheet = practiceFor(documentType, 'ja');
+      expect(sheet?.language, `${documentType} practice`).toBe('ja');
+    }
+  });
+
+  it('the Japanese practice sheet keeps the Korean answer key', () => {
+    for (const documentType of ['tax_notice', 'utility_bill'] as const) {
+      const ko = practiceFor(documentType, 'ko')!;
+      const ja = practiceFor(documentType, 'ja')!;
+      expect(ja.questions.map((q) => q.id)).toEqual(ko.questions.map((q) => q.id));
+      for (const [index, question] of ja.questions.entries()) {
+        const original = ko.questions[index]!;
+        expect(
+          question.options.map((o) => o.correct),
+          `${question.id} answer key`,
+        ).toEqual(original.options.map((o) => o.correct));
+        expect(question.hints.highlightBlockId).toBe(original.hints.highlightBlockId);
+      }
+    }
+  });
+
+  it('every visible demo document is named in both languages', () => {
+    for (const fixture of VISIBLE_DOCUMENT_FIXTURES) {
+      for (const language of ['ko', 'ja'] as const) {
+        expect(fixture.title[language], `${fixture.id} title`).toBeTruthy();
+        expect(fixture.description[language], `${fixture.id} description`).toBeTruthy();
+      }
+      // A Japanese label that is just the Korean one copied across is the
+      // failure this is here to catch.
+      expect(fixture.title.ja, `${fixture.id} untranslated`).not.toBe(fixture.title.ko);
     }
   });
 });

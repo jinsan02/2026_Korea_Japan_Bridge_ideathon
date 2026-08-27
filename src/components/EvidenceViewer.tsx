@@ -85,7 +85,7 @@ export function EvidenceCard({
 
 /** The page image with the region highlighted. */
 export function EvidenceLocation({ evidence }: { evidence: EvidenceItem }) {
-  const { meta, image, t } = useSession();
+  const { meta, image, t, language } = useSession();
   const fixture = meta?.fixtureId ? getFixture(meta.fixtureId) : undefined;
 
   if (fixture) {
@@ -94,7 +94,7 @@ export function EvidenceLocation({ evidence }: { evidence: EvidenceItem }) {
         <DocumentPageView
           page={fixture.page}
           highlight={evidence.region ?? null}
-          label={`${fixture.title} - ${t.evidence.location}`}
+          label={`${fixture.title[language]} - ${t.evidence.location}`}
         />
       </div>
     );

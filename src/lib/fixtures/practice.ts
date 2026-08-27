@@ -99,7 +99,7 @@ const taxPracticePage: SyntheticDocumentPage = {
   ],
 };
 
-const taxPractice: PracticeScenario = {
+export const taxPractice: PracticeScenario = {
   id: 'practice-kr-tax-auto',
   documentType: 'tax_notice',
   country: 'KR',
@@ -669,7 +669,7 @@ const waterPracticePage: SyntheticDocumentPage = {
     },
     {
       id: 'synthetic-note',
-      text: '연습용 합성문서입니다. 개인정보는 ●●●로 가렸습니다.',
+      text: '練習用に 作った 合成文書です。個人情報は ●●● で かくして あります。',
       x: 60,
       y: 1000,
       width: 680,
@@ -679,7 +679,7 @@ const waterPracticePage: SyntheticDocumentPage = {
   ],
 };
 
-const waterPractice: PracticeScenario = {
+export const waterPractice: PracticeScenario = {
   id: 'practice-jp-water',
   documentType: 'utility_bill',
   country: 'JP',
@@ -800,6 +800,7 @@ export const PRACTICE_PAGES: Record<string, SyntheticDocumentPage> = {
   'practice-kr-welfare': welfarePracticePage,
 };
 
+/** The Korean sheet. Language-aware lookup lives in ./learning-content. */
 export function getPracticeScenario(id: string): PracticeScenario | undefined {
   return PRACTICE_SCENARIOS.find((scenario) => scenario.id === id);
 }

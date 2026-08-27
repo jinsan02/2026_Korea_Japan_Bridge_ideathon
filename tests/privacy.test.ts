@@ -171,3 +171,13 @@ describe('korean particles with qualifiers', () => {
     expect(euro('복지 안내문 (한국)')).toBe('복지 안내문 (한국)으로');
   });
 });
+
+describe('masking does not eat document wording', () => {
+  it('leaves お客さま alone but still masks a real addressee', () => {
+    // お客さま is a common noun; masking it rewrote "お客さまセンター" into
+    // "●●●さまセンター" and hid the label of the number people should call.
+    expect(maskText('お客さまセンター 000-000-0000')).toContain('お客さまセンター');
+    expect(maskText('山田太郎 様')).not.toContain('山田太郎');
+    expect(maskText('●●● 様')).toContain('様');
+  });
+});

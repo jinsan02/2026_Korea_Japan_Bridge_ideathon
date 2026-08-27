@@ -18,7 +18,7 @@
 import type { DocumentTypeId } from '@/lib/analysis/schema';
 import type { DocumentTutorial } from '@/lib/learning/types';
 
-const taxTutorial: DocumentTutorial = {
+export const taxTutorial: DocumentTutorial = {
   documentType: 'tax_notice',
   country: 'KR',
   language: 'ko',
@@ -287,7 +287,7 @@ const welfareTutorial: DocumentTutorial = {
   practiceScenarioIds: ['practice-kr-welfare'],
 };
 
-const utilityTutorial: DocumentTutorial = {
+export const utilityTutorial: DocumentTutorial = {
   documentType: 'utility_bill',
   country: 'JP',
   language: 'ko',
@@ -395,6 +395,7 @@ export const DOCUMENT_TUTORIALS: readonly DocumentTutorial[] = [
   welfareTutorial,
 ];
 
+/** The Korean manual. Language-aware lookup lives in ./learning-content. */
 export function getTutorial(
   documentType: DocumentTypeId,
 ): DocumentTutorial | undefined {

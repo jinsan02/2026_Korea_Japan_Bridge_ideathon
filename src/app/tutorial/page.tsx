@@ -17,16 +17,19 @@ import { Suspense, useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { SpeakButton } from '@/components/SpeakButton';
 import type { DocumentTypeId } from '@/lib/analysis/schema';
-import { DOCUMENT_TUTORIALS, getTutorial } from '@/lib/fixtures/tutorials';
-import { practiceForDocumentType } from '@/lib/fixtures/practice';
+import {
+  practiceFor,
+  tutorialFor,
+  tutorialsFor,
+} from '@/lib/fixtures/learning-content';
 import { readProgress } from '@/lib/learning/progress';
 import { buildUtterance } from '@/lib/speech';
 import { useSession } from '@/lib/session/SessionProvider';
 
 function TutorialDetail({ documentType }: { documentType: DocumentTypeId }) {
-  const { t, logEvent, conditionDefinition } = useSession();
-  const tutorial = getTutorial(documentType);
-  const scenario = practiceForDocumentType(documentType);
+  const { t, language, logEvent, conditionDefinition } = useSession();
+  const tutorial = tutorialFor(documentType, language);
+  const scenario = practiceFor(documentType, language);
 
   useEffect(() => {
     logEvent('tutorial_viewed', { screen: 'tutorial', documentType });
@@ -155,7 +158,7 @@ function TutorialDetail({ documentType }: { documentType: DocumentTypeId }) {
 }
 
 function TutorialList() {
-  const { t } = useSession();
+  const { t, language } = useSession();
   const [learned, setLearned] = useState<DocumentTypeId[]>([]);
 
   useEffect(() => {
@@ -164,12 +167,9 @@ function TutorialList() {
 
   // Manuals the user has unlocked come first; the rest are shown as available
   // so the library does not look empty on a fresh install.
-  const unlocked = DOCUMENT_TUTORIALS.filter((tutorial) =>
-    learned.includes(tutorial.documentType),
-  );
-  const others = DOCUMENT_TUTORIALS.filter(
-    (tutorial) => !learned.includes(tutorial.documentType),
-  );
+  const all = tutorialsFor(language);
+  const unlocked = all.filter((tutorial) => learned.includes(tutorial.documentType));
+  const others = all.filter((tutorial) => !learned.includes(tutorial.documentType));
 
   return (
     <AppShell screen="tutorial_list" backHref="/" showBadges={false}>

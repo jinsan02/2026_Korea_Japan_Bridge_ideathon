@@ -14,14 +14,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
-import { getPracticeScenario } from '@/lib/fixtures/practice';
-import { getTutorial } from '@/lib/fixtures/tutorials';
+import { practiceById, tutorialFor } from '@/lib/fixtures/learning-content';
 import { readProgress } from '@/lib/learning/progress';
 import { summarise, type PracticeRecord } from '@/lib/learning/types';
 import { useSession } from '@/lib/session/SessionProvider';
 
 export default function PracticeResultScreen() {
-  const { t } = useSession();
+  const { t, language } = useSession();
   const [record, setRecord] = useState<PracticeRecord | null>(null);
 
   useEffect(() => {
@@ -46,8 +45,8 @@ export default function PracticeResultScreen() {
     );
   }
 
-  const scenario = getPracticeScenario(record.scenarioId);
-  const tutorial = getTutorial(record.documentType);
+  const scenario = practiceById(record.scenarioId, language);
+  const tutorial = tutorialFor(record.documentType, language);
   const stats = summarise(record);
 
   const independentQuestions = record.outcomes.filter((outcome) => outcome.independent);

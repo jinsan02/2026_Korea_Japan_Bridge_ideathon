@@ -21,7 +21,7 @@ import { useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
 import { RequireAnalysis } from '@/components/RequireAnalysis';
-import { practiceForDocumentType } from '@/lib/fixtures/practice';
+import { practiceFor } from '@/lib/fixtures/learning-content';
 import { nextFixture } from '@/lib/fixtures/documents';
 import { fastForwardReminder, setReminder } from '@/lib/learning/progress';
 import { useSession } from '@/lib/session/SessionProvider';
@@ -44,13 +44,13 @@ function reminderTime(when: 'tonight' | 'tomorrow'): string {
 
 export default function SolveCompleteScreen() {
   const router = useRouter();
-  const { t, meta, setFixtureId, setImage, logEvent } = useSession();
+  const { t, language, meta, setFixtureId, setImage, logEvent } = useSession();
   const [scheduled, setScheduled] = useState<string | null>(null);
 
   return (
     <RequireAnalysis screen="solve_complete">
       {(analysis) => {
-        const scenario = practiceForDocumentType(analysis.documentType);
+        const scenario = practiceFor(analysis.documentType, language);
         const continuation = meta?.fixtureId ? nextFixture(meta.fixtureId) : undefined;
 
         const openContinuation = () => {

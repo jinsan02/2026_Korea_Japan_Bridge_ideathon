@@ -18,12 +18,12 @@ import { AppShell } from '@/components/AppShell';
 import { RequireAnalysis } from '@/components/RequireAnalysis';
 import { SpeakButton } from '@/components/SpeakButton';
 import { HumanReviewNotice } from '@/components/WarningList';
-import { getTutorial } from '@/lib/fixtures/tutorials';
+import { tutorialFor } from '@/lib/fixtures/learning-content';
 import { buildUtterance } from '@/lib/speech';
 import { useSession } from '@/lib/session/SessionProvider';
 
 export default function ContactScreen() {
-  const { t, logEvent, conditionDefinition } = useSession();
+  const { t, language, logEvent, conditionDefinition } = useSession();
   const [confirming, setConfirming] = useState<string | null>(null);
 
   return (
@@ -32,7 +32,7 @@ export default function ContactScreen() {
         const contacts = analysis.officialContacts.filter(
           (contact) => contact.source === 'document',
         );
-        const tutorial = getTutorial(analysis.documentType);
+        const tutorial = tutorialFor(analysis.documentType, language);
 
         return (
           <AppShell

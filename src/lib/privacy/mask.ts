@@ -57,7 +57,16 @@ const EMAIL = /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g;
  */
 const KR_NAME_HONORIFIC = /[가-힣]{2,4}(?=\s*(?:귀하|님께|님\b|씨\b))/g;
 
-/** Japanese addressee form: 山田太郎 様. */
+/**
+ * Japanese addressee form: 山田太郎 様.
+ *
+ * "お客さま" is not a name. Masking it rewrote a gas bill's own wording into
+ * "●●●さまセンター", which reads as a rendering fault and, worse, hides a
+ * phone number's label on the one screen that tells people who to call. The
+ * honorific prefix お/ご marks what follows as a common noun, so those are
+ * left alone along with the few polite forms that appear on a bill.
+ */
+const JP_COMMON_HONORIFIC = /^(?:お客|ご家族|ご本人|皆|みな|お子|奥|お孫)$/;
 const JP_NAME_HONORIFIC = /[一-鿿぀-ヿ]{2,6}(?=\s*(?:様|さま))/g;
 
 const RULES: MaskRule[] = [
@@ -74,7 +83,11 @@ const RULES: MaskRule[] = [
   { name: 'jp_mynumber', pattern: JP_MYNUMBER, replace: starOut },
   { name: 'long_digits', pattern: BARE_LONG_DIGITS, replace: starOut },
   { name: 'kr_name', pattern: KR_NAME_HONORIFIC, replace: starOut },
-  { name: 'jp_name', pattern: JP_NAME_HONORIFIC, replace: starOut },
+  {
+    name: 'jp_name',
+    pattern: JP_NAME_HONORIFIC,
+    replace: (match) => (JP_COMMON_HONORIFIC.test(match) ? match : MASK),
+  },
 ];
 
 export function maskText(input: string): string {

@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
-import { getPracticeScenario } from '@/lib/fixtures/practice';
+import { practiceById } from '@/lib/fixtures/learning-content';
 import { clearProgress, readProgress } from '@/lib/learning/progress';
 import {
   hintReduction,
@@ -35,7 +35,7 @@ function formatWhen(iso: string): string {
 }
 
 export default function HistoryScreen() {
-  const { t } = useSession();
+  const { t, language } = useSession();
   const [records, setRecords] = useState<PracticeRecord[]>([]);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function HistoryScreen() {
                 <tbody>
                   {records.map((record) => {
                     const stats = summarise(record);
-                    const scenario = getPracticeScenario(record.scenarioId);
+                    const scenario = practiceById(record.scenarioId, language);
                     return (
                       <tr key={record.id}>
                         <td>{formatWhen(record.completedAt)}</td>

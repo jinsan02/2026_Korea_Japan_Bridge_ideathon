@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '@/components/AppShell';
-import { practiceForDocumentType } from '@/lib/fixtures/practice';
+import { practiceFor } from '@/lib/fixtures/learning-content';
 import {
   dueReminder,
 
@@ -26,7 +26,7 @@ import { useSession } from '@/lib/session/SessionProvider';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { t, logEvent, resetRun } = useSession();
+  const { t, language, logEvent, resetRun } = useSession();
   const [reminder, setPendingReminder] = useState<ReviewReminder | null>(null);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function HomeScreen() {
   const startReview = () => {
     if (!reminder) return;
     const scenario =
-      practiceForDocumentType(reminder.documentType)?.id ?? reminder.scenarioId;
+      practiceFor(reminder.documentType, language)?.id ?? reminder.scenarioId;
     router.push(`/practice?scenario=${encodeURIComponent(scenario)}`);
   };
 

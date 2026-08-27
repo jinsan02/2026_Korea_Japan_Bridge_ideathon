@@ -47,9 +47,16 @@ export interface DocumentFixture {
   /** Language printed on the page. */
   documentLanguage: Language;
   country: 'KR' | 'JP';
-  /** Name shown in the demo document picker. */
-  title: string;
-  description: string;
+  /**
+   * Name and blurb in the demo picker, in every interface language.
+   *
+   * A record rather than a Korean string with a lookup table beside it: the
+   * table lived in the capture screen, fell back to Korean when a key was
+   * missing, and so went silently stale the moment two documents were added.
+   * As a record, a document without its Japanese name does not compile.
+   */
+  title: Record<'ko' | 'ja', string>;
+  description: Record<'ko' | 'ja', string>;
   /** Emoji for the picker card, always paired with text - never colour alone. */
   icon: string;
   page: SyntheticDocumentPage;
@@ -647,8 +654,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'tax_notice',
     documentLanguage: 'ko',
     country: 'KR',
-    title: '지방세 납세고지서 (한국)',
-    description: '집으로 온 고지서. 금액과 기한, 낼 수 있는 방법이 적혀 있습니다.',
+    title: {
+      ko: '지방세 납세고지서 (한국)',
+      ja: '地方税の 納税通知書（韓国）',
+    },
+    description: {
+      ko: '집으로 온 고지서. 금액과 기한, 낼 수 있는 방법이 적혀 있습니다.',
+      ja: '家に 届いた 通知書。金額と 期限、払える 方法が 書いて あります。',
+    },
     icon: '🏛️',
     page: krTaxPage,
     analysisByLanguage: { ko: krTaxAnalysisKo, ja: krTaxAnalysisJa },
@@ -658,8 +671,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'utility_bill',
     documentLanguage: 'ja',
     country: 'JP',
-    title: '가스요금 납부용지 (일본)',
-    description: '바코드가 있는 엽서. 편의점과 휴대폰 앱으로 낼 수 있습니다.',
+    title: {
+      ko: '가스요금 납부용지 (일본)',
+      ja: 'ガス料金の 払込票（日本）',
+    },
+    description: {
+      ko: '바코드가 있는 엽서. 편의점과 휴대폰 앱으로 낼 수 있습니다.',
+      ja: 'バーコードの ある はがき。コンビニと スマホの アプリで 払えます。',
+    },
     icon: '🔥',
     page: jpGasPage,
     continuesTo: 'jp-payment-app',
@@ -670,8 +689,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'utility_bill',
     documentLanguage: 'ja',
     country: 'JP',
-    title: '결제앱 화면 (일본)',
-    description: '바코드를 찍은 뒤 나온 화면. 종이가 아니라 화면도 문서입니다.',
+    title: {
+      ko: '결제앱 화면 (일본)',
+      ja: '決済アプリの 画面（日本）',
+    },
+    description: {
+      ko: '바코드를 찍은 뒤 나온 화면. 종이가 아니라 화면도 문서입니다.',
+      ja: 'バーコードを 読み取った 後の 画面。紙で なくても 書類です。',
+    },
     icon: '📱',
     page: jpAppPage,
     surface: 'screen',
@@ -682,8 +707,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'health_checkup',
     documentLanguage: 'ja',
     country: 'JP',
-    title: '건강검진 안내문 (일본)',
-    description: '일본어 원문을 쉬운 한국어로 설명합니다.',
+    title: {
+      ko: '건강검진 안내문 (일본)',
+      ja: '健康診断の お知らせ（日本）',
+    },
+    description: {
+      ko: '일본어 원문을 쉬운 한국어로 설명합니다.',
+      ja: '日本語の 書類を やさしい 言葉で 説明します。',
+    },
     icon: '🩺',
     page: healthPage,
     hidden: true,
@@ -694,8 +725,14 @@ export const DOCUMENT_FIXTURES: readonly DocumentFixture[] = [
     documentType: 'welfare_application',
     documentLanguage: 'ko',
     country: 'KR',
-    title: '복지 신청 안내문 (한국)',
-    description: '금액이 적혀 있지 않은 문서. 추측하지 않는 동작을 보여줍니다.',
+    title: {
+      ko: '복지 신청 안내문 (한국)',
+      ja: '福祉申請の お知らせ（韓国）',
+    },
+    description: {
+      ko: '금액이 적혀 있지 않은 문서. 추측하지 않는 동작을 보여줍니다.',
+      ja: '金額が 書かれて いない 書類。推測しない 動きを 見せます。',
+    },
     icon: '🤝',
     page: welfarePage,
     hidden: true,
