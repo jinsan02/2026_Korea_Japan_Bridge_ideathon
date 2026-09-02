@@ -3,6 +3,10 @@
 > AI Door의 목표는 사용자가 AI에게 계속 의존하게 만드는 것이 아니라,
 > 같은 유형의 문서를 다음에는 스스로 이해하고 처리할 수 있도록 돕는 것입니다.
 
+**2026 한일 브릿지 아이디어톤 (한신대학교 × 시모노세키시립대학) Team 4 / Ace —
+발표 종료, 최우수상 수상.** 배포된 시연 주소는
+https://2026-korea-japan-bridge-ideathon.vercel.app/ 입니다.
+
 고령자가 행정문서나 요금 용지를 촬영하면, 무엇부터 할지 **선택지 3개**를 주고 →
 쉬운 말로 단계별로 함께 해결하고 → 그 경험을 **문서 유형별 매뉴얼**로 정리하고 →
 개인정보 없는 **유사 합성문서로 복습**하며 → AI 도움을 점차 줄여가는 서비스입니다.
@@ -463,6 +467,7 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 
 ## 10. 문서
 
+- [`docs/PRESENTATION_KO.md`](docs/PRESENTATION_KO.md) — **실제로 발표한 한국어 시연 대본** (덱 대조 완료)
 - [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — 발표 시연 순서, 오류 대응 시나리오, 촬영 체크리스트
 - [`docs/FEATURE_STATUS.md`](docs/FEATURE_STATUS.md) — 구현 / 연출 / 미구현 구분표
 - [`docs/MODEL_COMPARISON.md`](docs/MODEL_COMPARISON.md) — 모델 비교 결과 기록 양식 (**아직 빈 양식**)
@@ -475,10 +480,13 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 
 ## 11. 아직 안 된 것
 
-- **실제 API 호출을 검증하지 못했습니다.** OpenAI 키와 Ollama가 이 환경에 없어
-  두 경로 모두 코드는 완성했지만 실제 응답으로 확인하지 못했습니다. 특히
-  `gpt-5.6-luna` / `gpt-5.6-terra` 가 계정에서 실제로 쓸 수 있는 모델인지
-  확인이 필요합니다. 안 되면 `.env.local` 의 모델명만 바꾸면 됩니다.
+- **실제 API 호출은 확인했습니다.** 배포된 URL의 `/api/analyze` 에 1×1 PNG를 보내
+  `gpt-5.6-luna` → (검증 실패) → `gpt-5.6-terra` 재분석 체인이 설계대로 도는 것과,
+  판독할 것이 없는 입력에서 하드닝이 `documentType: unknown` + 저신뢰 critical 경고를
+  만들고 날짜·금액·납부수단을 전부 비우는 것을 확인했습니다. 두 모델 ID 모두 계정에서
+  사용 가능합니다. Ollama 경로는 이 환경에 없어 여전히 미검증입니다.
+- **실제 문서 사진으로 측정한 추출 정확도는 없습니다.** 평가 세트와 채점 항목은
+  `docs/PROMPT_TUNING.md` 에 준비했지만 수행하지 않았습니다. 정확도 수치를 인용하지 마세요.
 - `docs/MODEL_COMPARISON.md` 는 빈 양식입니다. 채우기 전에 수치를 인용하지 마세요.
 - 일본어 문안은 원어민 검수를 받지 않았습니다 (`src/lib/i18n/ja.ts`,
   `src/lib/fixtures/demo-ja.ts`).

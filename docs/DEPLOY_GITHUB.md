@@ -48,14 +48,16 @@ GitHub Pages 는 정적 파일만 서빙하므로 이 셋이 전부 죽습니다
 4. Permissions: **Restricted** → `Model capabilities` 만 `Write` 로 두고 나머지는 `None`
 5. **한 번만 보여줍니다.** 복사해서 다음 단계에 바로 붙여넣으세요
 
-### 1-4. 쓸 수 있는 모델 확인 ⚠️ 중요
+### 1-4. 쓸 수 있는 모델 확인
 
-`.env.example` 의 모델명(`gpt-5.6-luna`, `gpt-5.6-terra`)이 **계정에서 실제로
-쓸 수 있는지 확인된 적이 없습니다.** 배포 후 반드시 한 번 눌러 보세요.
+`.env.example` 의 모델명(`gpt-5.6-luna`, `gpt-5.6-terra`)은 **배포된 URL에서
+실제 호출로 확인했습니다** — 둘 다 계정에서 사용 가능하고, 재분석 체인
+(luna → 검증 실패 → terra)도 설계대로 돕니다.
 
-안 되면 https://platform.openai.com/docs/models 에서 이미지 입력을 지원하는
-모델 ID 를 확인하고, Vercel 의 `OPENAI_MODEL` 값만 바꾸면 됩니다. 코드는
-고칠 것이 없습니다 — 모델 ID 는 환경변수에만 있습니다.
+다른 계정에서 쓸 때 모델이 막혀 있으면
+https://platform.openai.com/docs/models 에서 이미지 입력을 지원하는 모델 ID 를
+확인하고, Vercel 의 `OPENAI_MODEL` 값만 바꾸면 됩니다. 코드는 고칠 것이
+없습니다 — 모델 ID 는 환경변수에만 있습니다.
 
 ---
 
@@ -216,12 +218,16 @@ Vercel → **Deployments → 맨 위 항목 → ⋯ → Redeploy** 를 눌러야
 
 ---
 
-## 5. 시연 끝나면
+## 5. 시연 끝나면 ⚠️ 발표가 끝났습니다 — 지금 할 것
 
-공개 URL 에 키가 연결된 상태를 방치하지 마세요.
+발표는 종료되었습니다. **공개 URL 에 키가 연결된 상태를 방치하지 마세요.**
+지금은 아무나 URL 을 열면 본인 계정의 토큰을 쓸 수 있는 상태입니다.
 
-1. https://platform.openai.com/api-keys 에서 그 키를 **Revoke**
-2. 또는 Vercel 프로젝트를 **Settings → General → Delete Project**
+1. https://platform.openai.com/api-keys 에서 시연용 키를 **Revoke**
+2. 포트폴리오용으로 URL 을 계속 살려 두려면, 키를 지운 뒤 Vercel 환경변수를
+   `AI_PROVIDER=fixture` 로 바꾸고 Redeploy. 예시 문서 두 개로 전체 흐름이 그대로
+   돌고 **비용이 0** 입니다.
+3. 아예 내릴 거면 Vercel **Settings → General → Delete Project**
 
 ## 6. 알고 넘어가는 것
 
