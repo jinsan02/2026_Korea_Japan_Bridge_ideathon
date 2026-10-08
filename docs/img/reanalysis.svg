@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 0 1024 322" width="1024" height="322" role="img" aria-label="OpenAI는 gpt-5.6-luna 검증 실패 시 gpt-5.6-terra로 재분석하고, Ollama는 qwen3-vl:4b로 1회 재시도한다. 그래도 실패하면 사용자에게 예시 결과(Fixture) 전환을 제안하고 동의를 받은 뒤에만 경고와 함께 전환한다">
+<title>재분석 체인 — 불안전하면 다시 보고, 그래도 안 되면 묻는다</title>
+<style>
+  text { font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; fill: #1f2328; }
+  .ink { fill: #1f2328; } .sub { fill: #59636e; } .muted { fill: #818b98; } .lbl { fill: #59636e; }
+  .grid { stroke: #eaeef2; stroke-width: 1; } .base { stroke: #afb8c1; stroke-width: 1; }
+  .s1 { fill: #2a78d6; } .s2 { fill: #eb6834; } .s3 { fill: #1baf7a; } .s4 { fill: #eda100; }
+  .s5 { fill: #e87ba4; } .s6 { fill: #008300; } .s7 { fill: #4a3aa7; } .s8 { fill: #e34948; }
+  .dim { fill: #d0d7de; } .dim2 { fill: #8c959f; }
+  .box  { fill: #f6f8fa; stroke: #d0d7de; stroke-width: 1.2; }
+  .em   { fill: #e3eefb; stroke: #2a78d6; stroke-width: 1.6; }
+  .mute { fill: #ffffff; stroke: #d0d7de; stroke-width: 1.2; }
+  .k-auto { fill: #e0f5ec; stroke: #1baf7a; stroke-width: 1.4; }
+  .k-man  { fill: #fdf3d8; stroke: #eda100; stroke-width: 1.4; }
+  .k-todo { fill: none; stroke: #8c959f; stroke-width: 1.2; stroke-dasharray: 5 4; }
+  .grp { fill: none; stroke: #d0d7de; stroke-width: 1; stroke-dasharray: 3 3; }
+  .ln { stroke: #6e7781; stroke-width: 1.4; fill: none; } .ah { fill: #6e7781; }
+  .ln-em { stroke: #2a78d6; stroke-width: 2; fill: none; } .ah-em { fill: #2a78d6; }
+  .dash { stroke-dasharray: 5 4; }
+  @media (prefers-color-scheme: dark) {
+    text, .ink { fill: #e6edf3; } .sub, .lbl { fill: #9198a1; } .muted { fill: #8b949e; }
+    .grid { stroke: #262c36; } .base { stroke: #59636e; }
+    .s1 { fill: #3987e5; } .s2 { fill: #d95926; } .s3 { fill: #199e70; } .s4 { fill: #c98500; }
+    .s5 { fill: #d55181; } .s6 { fill: #008300; } .s7 { fill: #9085e9; } .s8 { fill: #e66767; }
+    .dim { fill: #3d444d; } .dim2 { fill: #6e7681; }
+    .box  { fill: #161b22; stroke: #3d444d; }
+    .em   { fill: #0f2340; stroke: #3987e5; }
+    .mute { fill: #0d1117; stroke: #3d444d; }
+    .k-auto { fill: #0c2a1f; stroke: #199e70; } .k-man { fill: #2e2408; stroke: #c98500; } .k-todo { stroke: #6e7681; }
+    .grp { stroke: #3d444d; }
+    .ln { stroke: #8b949e; } .ah { fill: #8b949e; } .ln-em { stroke: #3987e5; } .ah-em { fill: #3987e5; }
+  }
+</style>
+<text x="0" y="24" font-size="18" font-weight="600" class="ink">재분석 체인 — 불안전하면 다시 보고, 그래도 안 되면 묻는다</text><text x="0" y="48" font-size="14" class="sub">예시 결과로의 전환은 사용자 동의 뒤에만, 이유와 함께 경고 · 파란 상자 = 사용자에게 묻는 지점</text>
+<g transform="translate(0,64)">
+<text x="0" y="43" font-size="14" class="ink" font-weight="600">OpenAI</text>
+<rect class="box" x="110" y="10" width="180" height="56" rx="8"/>
+<text x="200" y="33" font-size="14" text-anchor="middle" font-weight="600" class="ink">gpt-5.6-luna</text>
+<text x="200" y="52" font-size="13" text-anchor="middle" class="sub">기본 모델</text>
+<polygon class="box" points="370,10 425,38 370,66 315,38"/>
+<text x="370" y="43" font-size="13" text-anchor="middle" font-weight="600" class="ink">검증</text>
+<rect class="box" x="470" y="10" width="200" height="56" rx="8"/>
+<text x="570" y="33" font-size="14" text-anchor="middle" font-weight="600" class="ink">gpt-5.6-terra</text>
+<text x="570" y="52" font-size="13" text-anchor="middle" class="sub">불안전할 때만 재분석</text>
+<rect class="em" x="760" y="10" width="230" height="56" rx="8"/>
+<text x="875" y="33" font-size="14" text-anchor="middle" font-weight="600" class="ink">Fixture 제안</text>
+<text x="875" y="52" font-size="13" text-anchor="middle" class="sub">동의하면 경고와 함께 전환</text>
+<polyline class="ln" points="290,38 306,38"/>
+<polygon class="ah" points="315,38 306,33 306,43"/>
+<polyline class="ln" points="425,38 461,38"/>
+<polygon class="ah" points="470,38 461,33 461,43"/>
+<text x="445" y="30" font-size="12.5" class="lbl" text-anchor="middle">불안전</text>
+<polyline class="ln" points="670,38 751,38"/>
+<polygon class="ah" points="760,38 751,33 751,43"/>
+<text x="715" y="30" font-size="12.5" class="lbl" text-anchor="middle">또 실패</text>
+<polyline class="ln" points="370,66 370,73"/>
+<polygon class="ah" points="370,82 375,73 365,73"/>
+<text x="378" y="80" font-size="12" class="lbl">통과하면 그대로 사용</text>
+<text x="0" y="143" font-size="14" class="ink" font-weight="600">Ollama</text>
+<rect class="box" x="110" y="110" width="180" height="56" rx="8"/>
+<text x="200" y="133" font-size="14" text-anchor="middle" font-weight="600" class="ink">qwen3-vl:4b</text>
+<text x="200" y="152" font-size="13" text-anchor="middle" class="sub">로컬</text>
+<polygon class="box" points="370,110 425,138 370,166 315,138"/>
+<text x="370" y="143" font-size="13" text-anchor="middle" font-weight="600" class="ink">검증</text>
+<rect class="box" x="470" y="110" width="200" height="56" rx="8"/>
+<text x="570" y="133" font-size="14" text-anchor="middle" font-weight="600" class="ink">qwen3-vl:4b</text>
+<text x="570" y="152" font-size="13" text-anchor="middle" class="sub">같은 모델로 1회 재시도</text>
+<rect class="em" x="760" y="110" width="230" height="56" rx="8"/>
+<text x="875" y="133" font-size="14" text-anchor="middle" font-weight="600" class="ink">Fixture 제안</text>
+<text x="875" y="152" font-size="13" text-anchor="middle" class="sub">동의하면 경고와 함께 전환</text>
+<polyline class="ln" points="290,138 306,138"/>
+<polygon class="ah" points="315,138 306,133 306,143"/>
+<polyline class="ln" points="425,138 461,138"/>
+<polygon class="ah" points="470,138 461,133 461,143"/>
+<text x="445" y="130" font-size="12.5" class="lbl" text-anchor="middle">불안전</text>
+<polyline class="ln" points="670,138 751,138"/>
+<polygon class="ah" points="760,138 751,133 751,143"/>
+<text x="715" y="130" font-size="12.5" class="lbl" text-anchor="middle">또 실패</text>
+<polyline class="ln" points="370,166 370,173"/>
+<polygon class="ah" points="370,182 375,173 365,173"/>
+<text x="378" y="180" font-size="12" class="lbl">통과하면 그대로 사용</text>
+<text x="0" y="226" font-size="13" class="lbl">재분석 트리거(needsSecondOpinion): 문서 종류 판별 실패 · 낮은 신뢰도 · 날짜/금액 충돌 · 근거 없는 행동카드 · 근거 전무</text>
+<text x="0" y="246" font-size="13" class="lbl">모델 ID는 .env.local 에서만 바뀐다. Ollama 경로는 아직 미검증이다.</text>
+</g>
+</svg>

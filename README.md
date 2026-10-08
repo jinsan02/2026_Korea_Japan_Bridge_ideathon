@@ -13,6 +13,8 @@ https://2026-korea-japan-bridge-ideathon.vercel.app/ 입니다.
 
 행사 주제: **An AI world where no one is left behind.**
 
+<p align="center"><img src="docs/img/learning_flow.svg" alt="촬영부터 혼자 해보기까지의 화면 흐름과 AI 도움이 줄어드는 4단계" width="100%"></p>
+
 ### 두 개의 시연 트랙
 
 두 시연은 서로 다른 사람의 서로 다른 상황입니다. 언어 전환은 번역일 뿐,
@@ -31,6 +33,9 @@ https://2026-korea-japan-bridge-ideathon.vercel.app/ 입니다.
 ---
 
 ## 1. 빠른 시작
+
+<details>
+<summary><b>설치 · 실행 · 명령어</b></summary>
 
 ```bash
 npm install
@@ -55,6 +60,7 @@ http://localhost:3000 이 열립니다.
 | `npm test` | 핵심 로직 테스트 (73개) |
 
 Node.js 18.18 이상이 필요합니다 (검증 환경: Node 24.19.0, npm 11.17.0).
+</details>
 
 ---
 
@@ -72,7 +78,8 @@ Node.js 18.18 이상이 필요합니다 (검증 환경: Node 24.19.0, npm 11.17.
 Qwen3-VL 8B 옵션은 제거했습니다. 8GB 카드에서 라이브 시연 기본값이 될 수
 없었고, 남겨 두면 발표 직전에 누를 수 있는 버튼만 하나 늘어납니다.
 
-### 2.1 OpenAI API 키 설정
+<details>
+<summary><b>2.1 OpenAI API 키 설정</b></summary>
 
 1. https://platform.openai.com/ 에 로그인합니다.
 2. https://platform.openai.com/api-keys 에서 새 Secret Key를 생성합니다.
@@ -94,8 +101,10 @@ OPENAI_FALLBACK_MODEL=gpt-5.6-terra
 > 모델 ID는 `.env.local`에서만 바뀝니다. 코드 어디에도 하드코딩되어 있지 않습니다.
 > 지정된 `gpt-5.6-luna` / `gpt-5.6-terra`가 계정에서 사용 불가하면 환경변수만 교체하세요.
 > Responses API를 쓰므로 `openai` SDK는 4.87 이상이 필요합니다 (현재 `^4.104.0`).
+</details>
 
-### 2.2 Ollama 로컬 모드 설정
+<details>
+<summary><b>2.2 Ollama 로컬 모드 설정</b></summary>
 
 ```bash
 # 1. Ollama 설치: https://ollama.com
@@ -124,8 +133,10 @@ OLLAMA_KEEP_ALIVE=30m
 > **8B를 라이브 시연 기본값으로 쓰지 마세요.** 8GB VRAM에서는 이미지와 긴 문맥을
 > 함께 처리할 때 일부 연산이 시스템 RAM/CPU로 넘어가 응답이 크게 느려질 수 있습니다.
 > 전원 연결 + 다른 GPU 프로그램 종료 + 사전 테스트를 마친 경우에만 사용하세요.
+</details>
 
-### 2.3 예시 문서 모드와 관리자 화면 분리
+<details>
+<summary><b>2.3 예시 문서 모드와 관리자 화면 분리</b></summary>
 
 - **환경변수**: `AI_PROVIDER=fixture`
 - **화면**: `/admin?key=<ADMIN_CODE>` → `예시 문서 모드`
@@ -155,23 +166,14 @@ ANALYZE_RATE_LIMIT_PER_MINUTE=10
 개인정보를 애초에 거부하므로, 막고 있는 것은 "지나가는 사람이 클릭 수를 내려받는 것"
 이지 유출이 아닙니다. **속도 제한도 인스턴스별 메모리 기준**이라 반복 호출로 인한
 비용 폭주를 막을 뿐, 분산 공격을 막지 못합니다.
+</details>
 
 ---
 
 ## 3. 핵심 흐름 — 해결에서 독립까지
 
-```
-처음 받은 실제 문서
-→ AI와 단계별로 함께 해결        (/solve, 6단계)
-→ 해결 과정에서 핵심 규칙 학습
-→ 문서 유형별 매뉴얼 생성        (/tutorial)
-→ 개인정보 없는 유사문서로 복습  (/practice)
-→ 고정 3단계 힌트 (위치 → 단어 → 정답)
-→ AI 도움 점진적 감소            (guided → hinted → solo → final_check)
-→ 다음에는 사용자가 먼저 해결
-```
-
-### 3.1 화면
+<details>
+<summary><b>3.1 화면 목록</b></summary>
 
 | 경로 | 화면 |
 |---|---|
@@ -190,8 +192,10 @@ ANALYZE_RATE_LIMIT_PER_MINUTE=10
 | `/practice/result` | 혼자 맞힌 것 / 힌트 쓴 것 / 다음에 기억할 내용 |
 | `/history` | 지난 연습 기록 |
 | `/admin` | 모드·모델·실험 조건·이벤트 로그 (`ADMIN_CODE` 필요) |
+</details>
 
-### 3.2 도움 감소 4단계
+<details>
+<summary><b>3.2 도움 감소 4단계 — 표</b></summary>
 
 | 단계 | 동작 |
 |---|---|
@@ -202,6 +206,7 @@ ANALYZE_RATE_LIMIT_PER_MINUTE=10
 
 한 단계씩만 내려가며, **직접 힌트를 요청하지 않고 2/3 이상 정답**일 때만 내려갑니다.
 힘들게 통과한 회차에서 도움을 줄이면 연습한 것을 벌주는 셈이 되기 때문입니다.
+</details>
 
 ### 3.3 확인 화면의 선택지 3개
 
@@ -225,33 +230,10 @@ ANALYZE_RATE_LIMIT_PER_MINUTE=10
 
 ## 4. 아키텍처
 
-```
-브라우저                     서버 (Next.js Route Handler)         외부
-────────                     ──────────────────────────           ────
-사진 선택
-  ↓ prepareImage()
-  · 긴 변 1600px 축소
-  · EXIF/GPS 제거
-  · 회전 보정
-  ↓ base64
-POST /api/analyze  ────────► resolveRequestedProvider()
-                             ↓
-                             DocumentAnalysisProvider
-                             ├ OpenAIProvider  ──────────────────► Responses API
-                             ├ OllamaProvider  ──────────────────► 127.0.0.1:11434
-                             └ FixtureProvider (네트워크 없음)
-                             ↓ ModelAnalysisSchema (zod)
-                             ↓ needsSecondOpinion()  → 필요시 1회 재분석
-                             ↓ hardenAnalysis()      ← 안전 규칙
-◄──────────────────────────  AnalysisOutcome
-  ↓
-화면 렌더 (근거 없는 값은 확정 표시 안 함)
-  ↓
-POST /api/logs  ───────────► StrictEventSchema → .data/events.ndjson
-                             (문서 내용은 스키마상 저장 불가)
-```
+<p align="center"><img src="docs/img/architecture.svg" alt="브라우저 → Next.js 서버(Provider · zod · needsSecondOpinion · hardenAnalysis) → 화면, 외부 OpenAI · Ollama, 비식별 이벤트 로그" width="100%"></p>
 
-### 4.1 Provider 추상화
+<details>
+<summary><b>4.1 Provider 추상화</b></summary>
 
 ```ts
 interface DocumentAnalysisProvider {
@@ -264,19 +246,17 @@ interface DocumentAnalysisProvider {
 세 구현이 모두 동일한 `DocumentAnalysis` JSON을 반환합니다.
 공급자 추가 = `src/lib/providers/`에 파일 하나 + `createProvider()`에 case 하나.
 확장 예정: `PaddleOCRProvider`, `HybridProvider`(OCR 텍스트 + LLM 구조화).
+</details>
 
 ### 4.2 재분석 체인
 
-```
-OpenAI:  gpt-5.6-luna → 검증 → (불안전할 때만) gpt-5.6-terra → 사용자에게 Fixture 제안
-Ollama:  qwen3-vl:4b  → 검증 → 같은 모델로 1회 재시도       → 사용자에게 Fixture 제안
-Fixture: 사전 검증된 합성문서 결과
-```
+<p align="center"><img src="docs/img/reanalysis.svg" alt="OpenAI와 Ollama의 재분석 체인과 Fixture 전환 지점" width="100%"></p>
 
 재분석 트리거(`needsSecondOpinion`): 문서 종류 판별 실패 · 낮은 신뢰도 ·
 날짜/금액 충돌 · 근거 없는 행동카드 · 근거 전무.
 
-### 4.3 폴더 구조
+<details>
+<summary><b>4.3 폴더 구조</b></summary>
 
 ```
 src/
@@ -293,10 +273,14 @@ src/
 │  └─ util/      image · date · ics
 └─ tests/        harden · learning · privacy · flow (67 tests)
 ```
+</details>
 
 ---
 
 ## 5. 구조화 출력 스키마
+
+<details>
+<summary><b>DocumentAnalysis 타입 (src/lib/analysis/schema.ts)</b></summary>
 
 모든 Provider가 반환하는 공통 형식입니다 (`src/lib/analysis/schema.ts`).
 
@@ -321,6 +305,7 @@ type DocumentAnalysis = {
   requiresHumanVerification: boolean;
 };
 ```
+</details>
 
 ### 5.1 서버가 강제하는 안전 규칙 (`hardenAnalysis`)
 
@@ -343,15 +328,18 @@ type DocumentAnalysis = {
 
 테스트: `tests/harden.test.ts`.
 
-#### 출력 길이 상한
+<details>
+<summary><b>출력 길이 상한</b></summary>
 
 행동카드 한 장이 최대 1,400자까지 허용되어 있었습니다. 78세가 폰에서 읽을 양이
 아닙니다. 지금은 `summary` 120자, `description` 100자, `method` 3개×70자,
 `evidence` 10개, `uncertainty` 3개×80자입니다. 행동카드의 `doNotDo` 배열은
 없앴습니다 — 금지사항이 해야 할 일과 같은 카드에서 경쟁하면 둘 다 안 읽힙니다.
 금지는 `warnings` 로 갑니다.
+</details>
 
-#### 납부수단 폐쇄형 어휘
+<details>
+<summary><b>납부수단 폐쇄형 어휘</b></summary>
 
 `paymentMethod` 는 자유 텍스트가 아니라 11개 중 하나입니다
 (`bank_counter` `post_office` `convenience_store` `atm` `internet_banking`
@@ -360,6 +348,7 @@ type DocumentAnalysis = {
 사전에서** 옵니다 — 매번 검증할 필요가 없는 고정 문구이기 때문입니다.
 한국 고지서 뒷면과 일본 払込票이 거의 같은 수단을 쓴다는 점이 두 트랙을 비교
 가능하게 만드는 지점입니다.
+</details>
 
 ---
 
@@ -379,6 +368,9 @@ type DocumentAnalysis = {
 숨긴 두 개는 지우지 않았습니다. 남겨 두면 "이 파이프라인이 두 문서에 하드코딩된
 것이 아니다"라는 주장이 계속 검증 가능한 상태로 남습니다.
 
+<details>
+<summary><b>연습용 합성문서와 일부러 빠뜨린 값</b></summary>
+
 연습용 합성문서(값이 다른 유사본): `practice-kr-tax-auto`(자동차세 52,300원 /
 12-16) · `practice-jp-water`(수도요금 6,930엔 / 7-15) · 그 외 숨김 2종.
 
@@ -390,6 +382,7 @@ type DocumentAnalysis = {
 문서 그림에 합성 표시가 인쇄되어 있고, 없으면 테스트가 실패합니다.
 `○○ペイ` 는 실제 서비스가 아니라 직접 그린 화면이며, 바코드는 아무것도
 인코딩하지 않는 고정 패턴입니다.
+</details>
 
 ---
 
@@ -415,6 +408,9 @@ type DocumentAnalysis = {
 
 ## 8. A/B/C 실험 로그
 
+<details>
+<summary><b>조건 · 기록 항목 · 핵심 지표</b></summary>
+
 `/admin`에서 조건을 전환합니다. 조사계획서 §4.3 매핑을 따릅니다.
 
 | 조건 | 제공 내용 |
@@ -436,9 +432,10 @@ type DocumentAnalysis = {
 Independent Completion Rate = 힌트 없이 정답을 맞힌 단계 / 전체 단계
 Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 ```
+</details>
 
 > 현재 수치는 **합성 연습 결과**입니다. 실제 사용자 데이터가 없으므로
-> "AI 의존도를 감소시켰다"고 단정하지 말고 **"줄이는 것을 목표로 설계했다"**고 표현하세요.
+> "AI 의존도를 감소시켰다"고 단정하지 말고 "**줄이는 것을 목표로 설계했다**"고 표현하세요.
 
 ---
 
@@ -447,6 +444,9 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 본문 20px · 행간 1.7 · 터치 영역 최소 56px · 검정 글자/로즈 화이트 대비 약 20.1:1 ·
 색상만으로 상태 구분하지 않음(아이콘+글자 병기) · 뒤로가기 위치 고정 ·
 음성 읽기 · `prefers-reduced-motion` 존중 · 확대 제한 없음(`maximum-scale=5`).
+
+<details>
+<summary><b>헤더 · 읽기 설정 · 한국어 조사</b></summary>
 
 **헤더는 두 줄입니다.** 첫 줄은 지금 어디이고 어떻게 나가는지(뒤로 · 단계 · 로고),
 둘째 줄은 어떻게 읽고 싶은지(글자 크기 · 언어)입니다. 한 줄에 있을 때는
@@ -462,6 +462,7 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 **한국어 조사도 자동으로 고릅니다.** 문서 종류 이름은 모델이 만들기 때문에 문장에
 조사를 고정할 수 없습니다 — "고지서**로**"와 "안내문**으로**"가 갈립니다
 (`src/lib/i18n/particle.ts`).
+</details>
 
 ---
 
@@ -492,3 +493,4 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
   `src/lib/fixtures/demo-ja.ts`).
 - 효과는 측정되지 않았습니다. "AI 의존도를 **줄이는 것을 목표로 설계했다**"고
   말하고, "줄였다"고 말하지 마세요.
+
