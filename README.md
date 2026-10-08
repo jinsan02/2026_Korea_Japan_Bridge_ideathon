@@ -7,6 +7,13 @@
 발표 종료, 최우수상 수상.** 배포된 시연 주소는
 https://2026-korea-japan-bridge-ideathon.vercel.app/ 입니다.
 
+> **포트폴리오 요약**
+> 문서 인식 정확도를 주장하는 프로젝트가 아니라, 근거 없는 날짜·금액·연락처를 제거하고
+> 사람 확인으로 전환하는 안전장치를 구현·검증한 한일 행정문서 지원 MVP입니다. 2026-09-02
+> 기준 자동 테스트 80/80, TypeScript strict 검사, 프로덕션 빌드와 소스 정의 라우트 18개를
+> 재검증했습니다. 사용자의 이해도 향상·AI 의존도 감소는 기대 효과이며, 실제 사용자 연구,
+> 문서 추출 정확도 평가, 일본어 원어민 검수로 입증된 성과는 아닙니다.
+
 고령자가 행정문서나 요금 용지를 촬영하면, 무엇부터 할지 **선택지 3개**를 주고 →
 쉬운 말로 단계별로 함께 해결하고 → 그 경험을 **문서 유형별 매뉴얼**로 정리하고 →
 개인정보 없는 **유사 합성문서로 복습**하며 → AI 도움을 점차 줄여가는 서비스입니다.
@@ -57,7 +64,7 @@ http://localhost:3000 이 열립니다.
 | `npm run build` | 프로덕션 빌드 |
 | `npm start` | 빌드 결과 실행 |
 | `npm run typecheck` | TypeScript 검사 |
-| `npm test` | 핵심 로직 테스트 (73개) |
+| `npm test` | 핵심 로직·불변조건 테스트 (80개) |
 
 Node.js 18.18 이상이 필요합니다 (검증 환경: Node 24.19.0, npm 11.17.0).
 </details>
@@ -271,7 +278,7 @@ src/
 │  ├─ i18n/      ko · ja
 │  ├─ privacy/   mask
 │  └─ util/      image · date · ics
-└─ tests/        harden · learning · privacy · flow (67 tests)
+└─ tests/        harden · learning · privacy · flow (80 tests)
 ```
 </details>
 
@@ -404,6 +411,12 @@ type DocumentAnalysis = {
 > **온디바이스 개인정보 마스킹은 구현되어 있지 않습니다.** 동의 화면에서 그렇게 명시합니다.
 > `src/lib/privacy/mask.ts`는 **복습 화면 텍스트**에만 적용되는 패턴 마스킹입니다.
 
+`OPENAI_API_KEY`는 서버 환경변수이며 Git과 브라우저 번들에 포함되지 않습니다. 하지만 공개
+배포에서 `/api/analyze`는 사용자 인증 없이 호출할 수 있으므로, 서버 키가 직접 노출되지 않아도
+방문자가 계정 비용을 발생시킬 수 있습니다. 현재 속도 제한은 인스턴스 메모리와 프록시 전달
+주소에 의존하는 비용 완화책일 뿐, 공유 저장소 기반 쿼터·WAF·사용자 인증을 대신하지 않습니다.
+`ADMIN_CODE` 역시 공유 코드와 동일 값을 담은 쿠키를 쓰는 데모용 가림막이며 운영 인증이 아닙니다.
+
 ---
 
 ## 8. A/B/C 실험 로그
@@ -468,6 +481,9 @@ Hint Reduction              = 첫 연습 힌트 수 − 최근 연습 힌트 수
 
 ## 10. 문서
 
+- [`docs/verification.md`](docs/verification.md) — 80개 테스트·타입 검사·빌드·18개 라우트 재검증 기록
+- [`docs/limitations.md`](docs/limitations.md) — 정확도·사용자 연구·번역 검수·운영 보안의 미검증 범위
+- [`CONTRIBUTIONS.md`](CONTRIBUTIONS.md) — 본인 기여·직접 검증·Claude/Codex 보조 공개
 - [`docs/PRESENTATION_KO.md`](docs/PRESENTATION_KO.md) — **실제로 발표한 한국어 시연 대본** (덱 대조 완료)
 - [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — 발표 시연 순서, 오류 대응 시나리오, 촬영 체크리스트
 - [`docs/FEATURE_STATUS.md`](docs/FEATURE_STATUS.md) — 구현 / 연출 / 미구현 구분표
