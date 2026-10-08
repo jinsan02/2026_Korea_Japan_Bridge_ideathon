@@ -26,7 +26,7 @@ import { localise } from './localise';
 export const krTaxAnalysisJa: ModelAnalysis = localise(krTaxAnalysisKo, {
   language: 'ja',
   documentTypeLabel: '地方税の 納税通知書 (韓国)',
-  title: '2026年 定期分 財産税の 納税通知書',
+  title: '2027年 定期分 財産税の 納税通知書',
   summary: '財産税 86,400ウォンを 9月30日までに 払う 通知です。',
   dates: {
     'd-inside': '納期内',
@@ -85,8 +85,8 @@ export const krTaxAnalysisJa: ModelAnalysis = localise(krTaxAnalysisKo, {
   translations: {
     'ev-type': '地方税の 納税通知書 兼 領収証',
     'ev-amount': '納期内の 税額 86,400ウォン',
-    'ev-deadline': '納期内: 2026.09.30まで',
-    'ev-afterdate': '納期後: 2026.10.31まで',
+    'ev-deadline': '納期内: 2027.09.30まで',
+    'ev-afterdate': '納期後: 2027.10.31まで',
     'ev-after-blank': '納期後の 税額: 裏面の 日別金額を ご覧ください',
     'ev-paynum': '電子納付番号 0000-0000-0000-0000',
     'ev-place': '全国の 銀行、郵便局の 窓口で 払えます。',

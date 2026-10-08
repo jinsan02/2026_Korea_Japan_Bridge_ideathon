@@ -55,7 +55,7 @@ const taxPracticePage: SyntheticDocumentPage = {
     ...fieldRow({
       idPrefix: 'deadline',
       label: '납부 기한',
-      value: '2026년 12월 16일',
+      value: '2027년 12월 16일',
       y: 478,
       strong: true,
     }),
@@ -114,12 +114,12 @@ export const taxPractice: PracticeScenario = {
       kind: 'important_date',
       options: [
         {
-          text: '2026년 12월 16일',
+          text: '2027년 12월 16일',
           correct: true,
           feedback: '맞습니다. "납부 기한" 줄에 적혀 있습니다.',
         },
         {
-          text: '2026년 9월 30일',
+          text: '2027년 9월 30일',
           correct: false,
           feedback: '그 날짜는 이 문서에 없습니다. 표를 다시 보세요.',
         },
@@ -133,7 +133,7 @@ export const taxPractice: PracticeScenario = {
         location: '문서 가운데 표의 아래쪽을 살펴보세요.',
         keyword: '"납부 기한"이라고 적힌 줄을 찾아보세요.',
         answer:
-          '여기에 "납부 기한: 2026년 12월 16일"이라고 적혀 있습니다. 따라서 정답은 12월 16일입니다.',
+          '여기에 "납부 기한: 2027년 12월 16일"이라고 적혀 있습니다. 따라서 정답은 12월 16일입니다.',
         highlightBlockId: 'deadline-value',
       },
       explanation:
@@ -433,7 +433,7 @@ const welfarePracticePage: SyntheticDocumentPage = {
     ...fieldRow({
       idPrefix: 'deadline',
       label: '신청 기간',
-      value: '2026년 11월 20일까지',
+      value: '2027년 11월 20일까지',
       y: 366,
       strong: true,
     }),
@@ -485,7 +485,7 @@ const welfarePractice: PracticeScenario = {
       kind: 'important_date',
       options: [
         {
-          text: '2026년 11월 20일까지',
+          text: '2027년 11월 20일까지',
           correct: true,
           feedback: '맞습니다. "신청 기간" 줄에 적혀 있습니다.',
         },
@@ -503,7 +503,7 @@ const welfarePractice: PracticeScenario = {
       hints: {
         location: '표의 위쪽 절반을 보세요.',
         keyword: '"기간"이라는 글자가 들어간 줄을 찾아보세요.',
-        answer: '여기에 "신청 기간: 2026년 11월 20일까지"라고 적혀 있습니다.',
+        answer: '여기에 "신청 기간: 2027년 11월 20일까지"라고 적혀 있습니다.',
         highlightBlockId: 'deadline-value',
       },
       explanation: '복지 안내문은 기한을 넘기면 다음 모집까지 기다려야 합니다.',
@@ -604,7 +604,7 @@ const waterPracticePage: SyntheticDocumentPage = {
     },
     {
       id: 'deadline-value',
-      text: 'お支払期限 2026年10月15日',
+      text: 'お支払期限 2027年10月15日',
       x: 420,
       y: 390,
       width: 310,
@@ -725,12 +725,12 @@ export const waterPractice: PracticeScenario = {
       kind: 'important_date',
       options: [
         {
-          text: '2026년 10월 15일',
+          text: '2027년 10월 15일',
           correct: true,
           feedback: '맞습니다. "お支払期限" 줄에 적혀 있습니다.',
         },
         {
-          text: '2026년 4월 30일',
+          text: '2027년 4월 30일',
           correct: false,
           feedback: '그 날짜는 이 용지에 없습니다. 금액 오른쪽을 다시 보세요.',
         },
@@ -743,7 +743,7 @@ export const waterPractice: PracticeScenario = {
       hints: {
         location: '금액 바로 오른쪽을 보세요.',
         keyword: '"お支払期限"이라고 적힌 줄을 찾아보세요.',
-        answer: '"お支払期限 2026年10月15日"이라고 적혀 있습니다. 支払는 낸다, 期限은 기한이라는 뜻입니다.',
+        answer: '"お支払期限 2027年10月15日"이라고 적혀 있습니다. 支払는 낸다, 期限은 기한이라는 뜻입니다.',
         highlightBlockId: 'deadline-value',
       },
       explanation:

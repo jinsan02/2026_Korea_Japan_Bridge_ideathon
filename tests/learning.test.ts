@@ -80,8 +80,15 @@ describe('practice scenarios', () => {
 
     expect(fixtureText).toContain('86,400원');
     expect(practiceText).not.toContain('86,400원');
-    expect(fixtureText).toContain('2026.09.30');
-    expect(practiceText).not.toContain('2026.09.30');
+
+    // Read the deadline off the fixture rather than naming it here. The demo
+    // dates get moved forward whenever they age out, and a literal in the test
+    // turns that routine edit into three unrelated-looking failures.
+    const taxDeadline = taxFixture!.analysisByLanguage.ko?.importantDates[0]?.isoDate;
+    expect(taxDeadline).toBeTruthy();
+    const printedDeadline = taxDeadline!.replaceAll('-', '.');
+    expect(fixtureText).toContain(printedDeadline);
+    expect(practiceText).not.toContain(printedDeadline);
   });
 
   it('the Japanese practice slip differs from the gas slip it reviews', () => {
@@ -92,8 +99,13 @@ describe('practice scenarios', () => {
 
     expect(gasText).toContain('8,181円');
     expect(waterText).not.toContain('8,181円');
-    expect(gasText).toContain('2026年9月18日');
-    expect(waterText).not.toContain('2026年9月18日');
+
+    const gasDeadline = gas.analysisByLanguage.ko?.importantDates[0]?.isoDate;
+    expect(gasDeadline).toBeTruthy();
+    const [y, m, d] = gasDeadline!.split('-').map(Number);
+    const printedDeadline = `${y}年${m}月${d}日`;
+    expect(gasText).toContain(printedDeadline);
+    expect(waterText).not.toContain(printedDeadline);
   });
 
   it('practice documents carry no un-masked personal-data placeholder', () => {

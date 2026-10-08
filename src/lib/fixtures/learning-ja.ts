@@ -190,11 +190,11 @@ export const taxPracticeJa = localisePractice(taxPractice, {
       prompt: 'この 書類の 納期限は いつですか。',
       options: [
         {
-          text: '2026年12月16日',
+          text: '2027年12月16日',
           feedback: '正解です。「納付期限」の 行に 書いて あります。',
         },
         {
-          text: '2026年9月30日',
+          text: '2027年9月30日',
           feedback: 'その 日付は この 書類に ありません。表を もう一度 見て ください。',
         },
         {
@@ -206,7 +206,7 @@ export const taxPracticeJa = localisePractice(taxPractice, {
         location: '書類の 真ん中の 表の 下の ほうを 見て ください。',
         keyword: '「納付期限」と 書かれた 行を さがして ください。',
         answer:
-          'ここに「納付期限: 2026年12月16日」と 書いて あります。ですから 答えは 12月16日です。',
+          'ここに「納付期限: 2027年12月16日」と 書いて あります。ですから 答えは 12月16日です。',
       },
       explanation:
         '期限は 書いて ある とおりに 読めば 大丈夫です。記憶や 見当に たよらないで ください。',
@@ -299,11 +299,11 @@ export const waterPracticeJa = localisePractice(waterPractice, {
       prompt: 'いつまでに 払いますか。',
       options: [
         {
-          text: '2026年10月15日',
+          text: '2027年10月15日',
           feedback: '正解です。「お支払期限」の 行に 書いて あります。',
         },
         {
-          text: '2026年4月30日',
+          text: '2027年4月30日',
           feedback:
             'その 日付は この 用紙に ありません。金額の 右を もう一度 見て ください。',
         },
@@ -316,7 +316,7 @@ export const waterPracticeJa = localisePractice(waterPractice, {
         location: '金額の すぐ 右を 見て ください。',
         keyword: '「お支払期限」と 書かれた 行を さがして ください。',
         answer:
-          '「お支払期限 2026年10月15日」と 書いて あります。支払は 払う、期限は しめきりです。',
+          '「お支払期限 2027年10月15日」と 書いて あります。支払は 払う、期限は しめきりです。',
       },
       explanation:
         '金額と 期限は ほとんど いつも 並んで います。片方 見つかれば もう片方は すぐ 隣です。',

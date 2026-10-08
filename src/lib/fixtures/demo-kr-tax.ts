@@ -62,7 +62,7 @@ export const krTaxPage: SyntheticDocumentPage = {
     },
     {
       id: 'subtitle',
-      text: '2026년 정기분 재산세입니다. 기한 안에 납부하여 주시기 바랍니다.',
+      text: '2027년 정기분 재산세입니다. 기한 안에 납부하여 주시기 바랍니다.',
       x: 60,
       y: 220,
       width: 680,
@@ -91,7 +91,7 @@ export const krTaxPage: SyntheticDocumentPage = {
     },
     {
       id: 'inside-deadline',
-      text: '납기 내: 2026.09.30까지',
+      text: '납기 내: 2027.09.30까지',
       x: 400,
       y: 452,
       width: 330,
@@ -107,7 +107,7 @@ export const krTaxPage: SyntheticDocumentPage = {
     ...fieldRow({
       idPrefix: 'afterdate',
       label: '납기 후',
-      value: '2026.10.31까지',
+      value: '2027.10.31까지',
       y: 606,
       strong: true,
     }),
@@ -198,14 +198,14 @@ export const krTaxAnalysisKo: ModelAnalysis = {
   documentType: 'tax_notice',
   documentTypeLabel: '지방세 납세고지서',
   issuer: '서울 ○○구청',
-  title: '2026년 정기분 재산세 납세고지서',
+  title: '2027년 정기분 재산세 납세고지서',
   summary: '재산세 86,400원을 9월 30일까지 내라는 고지서입니다.',
   importantDates: [
     {
       id: 'd-inside',
       label: '납기 내',
-      isoDate: '2026-09-30',
-      rawText: '2026.09.30까지',
+      isoDate: '2027-09-30',
+      rawText: '2027.09.30까지',
       kind: 'deadline',
       evidenceIds: ['ev-deadline'],
       confidence: 0.97,
@@ -213,8 +213,8 @@ export const krTaxAnalysisKo: ModelAnalysis = {
     {
       id: 'd-after',
       label: '납기 후',
-      isoDate: '2026-10-31',
-      rawText: '2026.10.31까지',
+      isoDate: '2027-10-31',
+      rawText: '2027.10.31까지',
       kind: 'deadline',
       evidenceIds: ['ev-afterdate'],
       confidence: 0.94,
@@ -236,7 +236,7 @@ export const krTaxAnalysisKo: ModelAnalysis = {
       id: 'act-dates',
       title: '날짜가 두 개인 이유 알기',
       description: '9월 30일까지는 86,400원입니다. 그 뒤에는 금액이 달라집니다.',
-      deadline: '2026-09-30',
+      deadline: '2027-09-30',
       requiredItems: ['고지서'],
       method: ['위쪽 칸이 납기 내, 아래쪽 칸이 납기 후입니다.'],
       evidenceIds: ['ev-deadline', 'ev-afterdate', 'ev-amount'],
@@ -246,7 +246,7 @@ export const krTaxAnalysisKo: ModelAnalysis = {
       id: 'act-paynum',
       title: '전자납부번호로 내는 방법',
       description: '이 번호는 계좌번호가 아닙니다. 이 고지서에만 쓰는 번호입니다.',
-      deadline: '2026-09-30',
+      deadline: '2027-09-30',
       requiredItems: ['고지서'],
       method: [
         '창구에 가면 고지서만 그대로 내면 됩니다.',
